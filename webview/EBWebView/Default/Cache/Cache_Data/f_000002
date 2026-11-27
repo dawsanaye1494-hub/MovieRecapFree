@@ -1,0 +1,111 @@
+(()=>{
+ const el=id=>document.getElementById(id);let inspection=null,checking=false,sites=[],polling=false,searching=false,current=null,loaded=false;
+ async function del(path){const r=await fetch(path,{method:'DELETE'});const j=await r.json();if(!r.ok||j.error)throw new Error(j.error||'Request failed');return j}
+ async function api(path,body){const r=await fetch(path,body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json();if(!r.ok||j.error){const e=new Error(j.error||'Request failed');e.data=j;throw e}return j}
+ function msg(s,bad=false){el('refMessage').className=bad?'err':'muted';el('refMessage').textContent=s}
+ function smsg(s,bad=false){el('rsMsg').className=bad?'err':'muted';el('rsMsg').textContent=s}
+ const fmtDur=d=>{if(!d)return'';d=Math.round(d);const h=Math.floor(d/3600),m=Math.floor(d%3600/60),s=String(d%60).padStart(2,'0');return h?`${h}:${String(m).padStart(2,'0')}:${s}`:`${m}:${s}`};
+ const fmtViews=v=>v==null?'':v>=1e6?(v/1e6).toFixed(1)+'M views':v>=1e3?Math.round(v/1e3)+'K views':v+' views';
+ /* ---------- Find references (in-app search + player) ---------- */
+ const CHIPS=['movie recap','movie explained','电影解说','สรุปหนัง','영화 리뷰 요약','anime recap','horror movie recap','kdrama recap'];
+ function stopPlayer(){current=null;el('rsFrame').replaceChildren();el('rsPlayer').classList.add('hide');document.querySelectorAll('.rcard.sel').forEach(c=>c.classList.remove('sel'))}
+ function play(it,card){current=it;document.querySelectorAll('.rcard.sel').forEach(c=>c.classList.remove('sel'));card.classList.add('sel');el('rsTitle').textContent=it.title;el('rsMeta').className='muted';el('rsMeta').textContent=[it.channel,fmtDur(it.duration),fmtViews(it.views)].filter(Boolean).join(' · ');el('rsFrame').replaceChildren();
+  if(it.rednote){rnPlay(it);el('rsPlayer').classList.remove('hide');el('rsPlayer').scrollIntoView({block:'nearest'});return}
+  if(it.embed){const f=document.createElement('iframe');f.src=it.embed;f.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';f.allowFullscreen=true;f.referrerPolicy='strict-origin-when-cross-origin';el('rsFrame').append(f)}
+  else if(it.thumb){const i=document.createElement('img');i.src=it.thumb;i.style.cssText='width:100%;height:100%;object-fit:contain';el('rsFrame').append(i)}
+  el('rsPlayer').classList.remove('hide');el('rsPlayer').scrollIntoView({block:'nearest'})}
+ /* Rednote: no embed player. The app streams the post's H.264 file here; if that does not play
+    (black 0:00 player: CDN refused or a codec the window can't decode) it makes a playable copy once. */
+ function rnLoading(box,it,text){box.replaceChildren();const w=document.createElement('div');w.className='rs-load';if(it.thumb){const i=document.createElement('img');i.src=it.thumb;i.alt='';w.append(i)}const sp=document.createElement('div');sp.className='rs-spin';const t=document.createElement('span');t.textContent=text;w.append(sp,t);box.append(w)}
+ async function rnPlay(it){const box=el('rsFrame');let j=null,fell=false;
+  const live=()=>current===it;
+  const fail=m=>{if(!live())return;box.replaceChildren();el('rsMeta').className='err';el('rsMeta').textContent=m+' You can still press "Download this video".'};
+  const fallback=async()=>{if(fell||!live())return;fell=true;rnLoading(box,it,'Getting the video ready to play… (a few seconds)');
+   try{const k=await api('/references/rednote/prepare',{id:j.id});if(live())show(k.video,true)}catch(e){fail(e.message)}};
+  const show=(src,last)=>{box.replaceChildren();const v=document.createElement('video');v.controls=true;v.autoplay=true;v.playsInline=true;v.style.cssText='width:100%;height:100%;background:#000';
+   const bad=()=>{if(!box.contains(v))return;clearTimeout(timer);last?fail('This video will not play here.'):fallback()};
+   const timer=setTimeout(()=>{if(v.readyState<2)bad()},last?60000:9000);
+   v.addEventListener('error',bad);v.addEventListener('loadedmetadata',()=>{if(!v.videoWidth)bad()});v.addEventListener('loadeddata',()=>clearTimeout(timer));
+   v.src=src;box.append(v)};
+  rnLoading(box,it,'Opening the video…');el('rsMeta').textContent=[it.channel,it.likes?'♥ '+it.likes:''].filter(Boolean).join(' · ');
+  try{j=await api('/references/rednote/preview',{url:it.url})}catch(e){if(!live())return;box.replaceChildren();el('rsMeta').textContent=e.message;el('rsMeta').className='err';if(e.data?.signin)signInBox(true);return}
+  if(!live())return;el('rsMeta').textContent=[it.channel||j.channel,fmtDur(j.duration),it.likes?'♥ '+it.likes:''].filter(Boolean).join(' · ');
+  if(j.video)show(j.video,j.video.includes('/local/'));else fallback()}
+ function signInBox(keep){const g=el('rsGrid');if(!keep)g.replaceChildren();g.querySelector('.rn-signin')?.remove();const box=document.createElement('div');box.className='rn-signin';box.style.cssText='grid-column:1/-1;padding:14px;border:1px solid var(--line2);border-radius:var(--r);line-height:1.7;font-size:13px';
+  [['b','Rednote shows videos only to signed-in people.'],['div','1. Press "Sign in to Rednote". Rednote opens in a window of this app (not an outside browser).'],['div','2. Sign in once there (scan the QR code with the Rednote phone app, or use your phone number). The app remembers it.'],['div','3. Close that window and press Search here. Rednote videos then show up right here, like YouTube.']].forEach(([t,x])=>{const e=document.createElement(t);e.textContent=x;box.append(e)});
+  const b=document.createElement('button');b.className='btn';b.style.marginTop='8px';b.textContent='Sign in to Rednote';b.onclick=async()=>{try{await openRednote('')}catch(e){smsg(e.message,true)}};box.append(b);g.prepend(box)}
+ let sq=null,spage=0,smore=false,seen=new Set();
+ /* Skeleton cards while a search (or the next page) loads */
+ function skel(n){const g=el('rsGrid');for(let i=0;i<n;i++){const c=document.createElement('div');c.className='rcard rskel';c.setAttribute('aria-hidden','true');const th=document.createElement('div');th.className='th';const a=document.createElement('div');a.className='ln';const b=document.createElement('div');b.className='ln s';c.append(th,a,b);g.append(c)}}
+ const unskel=()=>el('rsGrid').querySelectorAll('.rskel').forEach(c=>c.remove());
+ function moreBtn(){if(el('rsMore')||!smore)return;const b=document.createElement('button');b.id='rsMore';b.className='ghost';b.style.gridColumn='1/-1';b.textContent='Load more videos';b.onclick=loadPage;el('rsGrid').append(b)}
+ function card(it){const c=document.createElement('div');c.className='rcard';c.title=it.title;const th=document.createElement('div');th.className='th';if(it.thumb){const im=document.createElement('img');im.loading='lazy';im.src=it.thumb;im.alt='';th.append(im)}if(it.duration){const d=document.createElement('span');d.className='du';d.textContent=fmtDur(it.duration);th.append(d)}const t=document.createElement('div');t.className='tt';t.textContent=it.title;const m=document.createElement('div');m.className='mt';m.textContent=[it.channel,fmtViews(it.views),it.likes?'♥ '+it.likes:''].filter(Boolean).join(' · ');c.append(th,t,m);c.onclick=()=>play(it,c);return c}
+ async function loadPage(){if(searching||!sq||!smore)return;searching=true;const my=sq;el('rsGo').disabled=true;el('rsMore')?.remove();skel(spage?6:12);el('rsGrid').setAttribute('aria-busy','true');smsg(spage?`${seen.size} videos · loading more…`:sq.site==='rednote'?'Searching Rednote… (takes a few seconds)':'Searching…');
+  try{const j=await api('/references/search',{...sq,page:spage+1});if(my!==sq)return;spage++;const g=el('rsGrid');unskel();let added=0;
+   for(const it of j.items){if(seen.has(it.url))continue;seen.add(it.url);g.append(card(it));added++}
+   smore=j.has_more&&j.items.length>0;
+   moreBtn();
+   smsg(seen.size?`${seen.size} videos${smore?' · scroll down for more':' · that is all the results'}. Click one to watch here, then download it.`:'No videos found. Try other words.')}
+  catch(e){if(my!==sq)return;smsg(e.message,true);if(e.data?.signin){smore=false;signInBox(seen.size>0)}unskel();moreBtn()}finally{if(my===sq){searching=false;el('rsGo').disabled=false;el('rsGrid').removeAttribute('aria-busy')}}}
+ async function openRednote(v){if(!window.pywebview?.api?.open_rednote)throw new Error('Rednote sign-in works in the desktop app. In a normal browser, paste a Rednote link in ↓ Download instead.');await window.pywebview.api.open_rednote(v||'')}
+ async function doSearch(){const q=el('rsQ').value.trim();
+  if(!q)return smsg('Type something to search.',true);
+  sq={q,site:el('rsSite').value,count:24};searching=false;spage=0;smore=true;seen=new Set();el('rsGrid').replaceChildren();stopPlayer();el('rsGrid').scrollTop=0;await loadPage()}
+ el('rsGrid').addEventListener('scroll',()=>{const g=el('rsGrid');if(g.scrollTop+g.clientHeight>g.scrollHeight-300)loadPage()});
+ el('refBtn').onclick=async()=>{el('refModal').classList.remove('hide');if(loaded)return;loaded=true;
+  el('rsChips').replaceChildren();CHIPS.forEach(c=>{const b=document.createElement('button');b.className='ghost';b.textContent=c;b.onclick=()=>{el('rsQ').value=c;doSearch()};el('rsChips').append(b)});
+  try{const s=await api('/references/search-sites');el('rsSite').replaceChildren(...s.sites.map(x=>new Option(x.name,x.id)))}catch(e){smsg(e.message,true)}
+  el('rsSite').onchange=()=>{if(el('rsQ').value.trim())doSearch()};
+  el('rsQ').value='movie recap';doSearch()};
+ el('refClose').onclick=()=>{stopPlayer();el('refModal').classList.add('hide')};
+ el('rsGo').onclick=doSearch;el('rsQ').onkeydown=e=>{if(e.key==='Enter')doSearch()};el('rsHide').onclick=stopPlayer;
+ el('rsDl').onclick=()=>{if(!current)return;const u=current.url;stopPlayer();el('refModal').classList.add('hide');openDl(u)};
+ /* ---------- Download by link ---------- */
+ const fmtB=b=>!b?'0 MB':b>1073741824?(b/1073741824).toFixed(2)+' GB':(b/1048576).toFixed(1)+' MB';
+ const LABEL={downloading:'Downloading',merging:'Finishing (joining video + audio)…',done:'✓ Completed',error:'✕ Failed',cancelled:'Cancelled'};
+ async function saveIt(d){if(window.pywebview?.api){const out=await window.pywebview.api.save_reference(d.id);if(out)msg('Saved: '+out)}else{const a=document.createElement('a');a.href='/references/file/'+d.id;a.download=d.filename;document.body.append(a);a.click();a.remove()}}
+ async function history(){try{const j=await api('/references/history');const box=el('refHistory');box.replaceChildren();if(!j.items.length){const p=document.createElement('p');p.className='muted';p.textContent='No downloads yet.';box.append(p)}
+  for(const d of j.items){const row=document.createElement('div');row.style.cssText='padding:8px 0;border-bottom:1px solid var(--line2);display:flex;flex-direction:column;gap:5px';
+   const top=document.createElement('div');top.className='toolbar';const t=document.createElement('b');t.style.cssText='flex:1;min-width:0;overflow-wrap:anywhere;font-size:12px';t.textContent=`${d.title} · ${d.quality==='best'?'Best':d.quality+'p'}`;top.append(t);
+   const btns=document.createElement('div');btns.className='row';btns.style.cssText='gap:6px;flex:0 0 auto';
+   const mk=(label,cls,fn)=>{const b=document.createElement('button');b.className=cls;b.textContent=label;b.style.whiteSpace='nowrap';b.onclick=async()=>{b.disabled=true;try{await fn()}catch(e){msg(e.message,true)}finally{b.disabled=false;history()}};btns.append(b)};
+   if(d.step==='done')mk('↓ Save video','btn',()=>saveIt(d));
+   if(['downloading','merging'].includes(d.step))mk('✕ Cancel','ghost',async()=>{await api('/references/cancel/'+d.id,{});msg('Cancellation requested')});
+   if(['error','cancelled'].includes(d.step))mk('↻ Retry','btn',async()=>{await api('/references/retry/'+d.id,{});msg('Retrying download…')});
+   if(!['downloading','merging'].includes(d.step))mk('✕ Remove','ghost',async()=>{if(!await uiConfirm('Remove this download from the list?\n\nThe copy kept inside the app is deleted. A video you already saved with "Save video" is kept.'))return;await del('/references/history/'+d.id);msg('Removed from history.')});
+   top.append(btns);row.append(top);
+   const active=['downloading','merging'].includes(d.step);const pct=d.step==='done'?100:(d.progress||0);
+   const bar=document.createElement('div');bar.style.cssText='height:8px;background:var(--line2);border-radius:4px;overflow:hidden';const fill=document.createElement('div');fill.style.cssText=`height:100%;width:${pct}%;transition:width .4s;background:${d.step==='error'?'#d9534f':d.step==='done'?'#3fb950':'var(--acc)'}`;bar.append(fill);row.append(bar);
+   const info=document.createElement('span');info.className=d.step==='error'?'err':'muted';info.style.cssText='font-size:11px;overflow-wrap:anywhere';
+   const parts=[LABEL[d.step]||d.step];
+   if(d.step==='downloading'){parts.push(pct+'%');if(d.total)parts.push(fmtB(d.downloaded)+' / '+fmtB(d.total));if(d.speed)parts.push(fmtB(d.speed)+'/s');if(d.eta!=null)parts.push(fmtDur(d.eta)+' left')}
+   if(d.step==='done'&&d.size)parts.push(fmtB(d.size)+' · '+(d.filename||''));
+   if(d.attempt>1)parts.push('attempt '+d.attempt);
+   if(d.step==='error'&&d.error)parts.push(d.error.slice(0,300)+' — press ↻ Retry');
+   info.textContent=parts.join(' · ');row.append(info);box.append(row)}}catch(e){msg(e.message,true)}}
+ async function openDl(url){el('dlModal').classList.remove('hide');history();if(!polling){polling=true;setInterval(()=>{if(!el('dlModal').classList.contains('hide')){history();rnStatus()}},1500)}rnStatus();
+  try{const c=await api('/references/cookies');el('refCookieState').textContent=c.imported?'Cookies imported':'No cookies imported'}catch(e){}
+  if(url){el('refUrl').value=url;el('refUrl').dispatchEvent(new Event('input'));inspect()}}
+ el('dlBtn').onclick=()=>openDl();
+ // Called by the desktop app when the red button in the Rednote window is pressed.
+ window.refOpenDl=u=>{stopPlayer();el('refModal').classList.add('hide');openDl(u)};
+ async function rnStatus(){try{const s=await api('/references/rednote');const yes=s.logged==='yes';
+  el('rnState').textContent=yes?'✓ Signed in (remembered by the app)':s.saved&&s.logged!=='no'?'Sign-in saved':'Not signed in — Rednote links need it';el('rnState').className=yes?'ok':'muted';
+  el('rnSignIn').textContent=yes?'Open Rednote window':'Sign in to Rednote';el('rnSignOut').classList.toggle('hide',!s.saved)}catch(e){}}
+ el('rnSignIn').onclick=async()=>{try{await openRednote('');msg('Rednote opened in its own window. Sign in once (QR code or phone) — the app remembers it. Then press Check resolutions again, or open a video there and press its red Download button.')}catch(e){msg(e.message,true)}};
+ el('rnSignOut').onclick=async()=>{if(!await uiConfirm('Sign out of Rednote in this app?'))return;try{await del('/references/rednote');msg('Signed out of Rednote.')}catch(e){msg(e.message,true)}finally{rnStatus()}};
+ el('refClearHistory').onclick=async()=>{if(!await uiConfirm('Clear the whole download history?\n\nFinished, failed and cancelled downloads are removed and their copies inside the app are deleted to free space. Videos you already saved with "Save video" are kept. Downloads still running are not touched.'))return;
+  const b=el('refClearHistory');b.disabled=true;try{const j=await del('/references/history');msg(j.removed?`History cleared (${j.removed} removed${j.running?`, ${j.running} still downloading`:''}).`:(j.running?'Only running downloads are left — cancel them first to remove them.':'History is already empty.'))}catch(e){msg(e.message,true)}finally{b.disabled=false;history()}};
+ el('dlClose').onclick=()=>el('dlModal').classList.add('hide');
+ el('refPaste').onclick=async()=>{try{const t=(await navigator.clipboard.readText()).trim();const m=t.match(/https?:\/\/\S+/);if(!m)return msg('Clipboard has no link.',true);el('refUrl').value=m[0];el('refUrl').dispatchEvent(new Event('input'))}catch(e){msg('Press Ctrl+V in the box to paste.',true)}};
+ // Share text from Rednote/Douyin etc. contains words + link: keep only the link.
+ el('refUrl').addEventListener('paste',e=>{const t=(e.clipboardData||window.clipboardData)?.getData('text')||'';const m=t.match(/https?:\/\/\S+/);if(m&&m[0]!==t.trim()){e.preventDefault();el('refUrl').value=m[0];el('refUrl').dispatchEvent(new Event('input'))}});
+ el('refUrl').oninput=()=>{inspection=null;el('refInfo').classList.add('hide')};
+ async function inspect(){if(checking)return;checking=true;inspection=null;el('refInfo').classList.add('hide');el('refInspect').disabled=true;msg('Checking available resolutions…');const input=el('refUrl').value.trim();try{const j=await api('/references/inspect',{url:input,cookies:el('refCookieUse').checked});let s;do{await new Promise(r=>setTimeout(r,800));s=await api('/references/status/'+j.id)}while(s.step==='inspecting');if(s.step!=='ready')throw new Error(s.error||'No downloadable video found');if(el('refUrl').value.trim()!==input)return;inspection=j.id;el('refTitle').textContent=s.title+' · '+s.platform;el('refQuality').replaceChildren(new Option('Best available (original quality)','best'));s.qualities.forEach(q=>el('refQuality').add(new Option(q+'p — up to this resolution',q)));el('refInfo').classList.remove('hide');msg('Available source resolutions loaded. No upscaling.')}catch(e){msg(e.message,true)}finally{checking=false;el('refInspect').disabled=false}}
+ el('refInspect').onclick=inspect;
+ el('refDownload').onclick=async()=>{if(!inspection)return;el('refDownload').disabled=true;try{await api('/references/download',{inspection,quality:el('refQuality').value});msg('Downloading… progress is shown below under Downloads.');await history()}catch(e){msg(e.message,true)}finally{el('refDownload').disabled=false}};
+ el('refCookieFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;const fd=new FormData();fd.append('cookies',f);try{const r=await fetch('/references/cookies',{method:'POST',body:fd});const j=await r.json();if(!r.ok)throw new Error(j.error);el('refCookieState').textContent='Cookies imported';el('refCookieUse').checked=true;inspection=null;el('refInfo').classList.add('hide')}catch(e){msg(e.message,true)}e.target.value=''};
+ el('refCookieClear').onclick=async()=>{try{await fetch('/references/cookies',{method:'DELETE'});el('refCookieUse').checked=false;el('refCookieState').textContent='Cookies removed';inspection=null;el('refInfo').classList.add('hide')}catch(e){msg(e.message,true)}};
+ function filter(){const q=el('refSiteSearch').value.toLowerCase();el('refSites').textContent=sites.filter(s=>s.toLowerCase().includes(q)).join(' · ')}
+ el('refSitesBtn').onclick=async()=>{try{const j=await api('/references/sites');sites=j.sites;el('refSiteSearch').classList.remove('hide');el('refSites').classList.remove('hide');filter();msg('yt-dlp '+j.version+' · '+sites.length+' extractors.')}catch(e){msg(e.message,true)}};el('refSiteSearch').oninput=filter;
+})();

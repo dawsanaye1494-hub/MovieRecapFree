@@ -1,0 +1,10 @@
+﻿_internal/
+models/
+tools/
+*.exe
+*.pth
+*.bin
+*.onnx
+__pycache__/
+*.pyc
+.env

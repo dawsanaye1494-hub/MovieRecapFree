@@ -1,0 +1,30 @@
+Movie Recap Studio (Free edition) — How to Use
+No license key is needed: the app opens straight away.
+===============================
+
+1) Installing the app
+   - If you received MovieRecapFreeSetup_v115.exe, double-click it and follow the
+     steps — the app installs itself and appears in your Start Menu.
+     No admin password is needed. Windows may still say "protected your PC";
+     click More info -> Run anyway (this warning stops once the app is signed).
+   - If you received a ZIP instead: unzip it, open the MovieRecap folder and
+     double-click MovieRecap.exe
+     Keep it somewhere like Desktop or Documents (not inside Program Files)
+
+2) Gemini API key (for translation — free)
+   - Go to https://aistudio.google.com/apikey and sign in with a Google account
+   - Click "Create API key" and copy the key (it starts with AIza...)
+   - In the app, click "🔑 API Key" at the top right, paste the key and click "Save"
+   - Free keys have per-minute / per-day limits — if you get a 429 error, wait a moment and try again
+
+3) Internet requirements
+   - Translation (Gemini) and the Burmese voices (Edge TTS) need internet
+   - The first transcription downloads the Whisper model (~0.5-1.5 GB) once
+
+4) Where projects are saved
+   - Press Win+R, paste %LocalAppData%\Programs\MovieRecapFree\jobs and press Enter.
+   - This folder is created when the app starts. Each project has a separate folder.
+   - If you chose a different install folder, open its jobs subfolder instead.
+   - Back up the entire jobs folder before uninstalling or moving the app.
+   - To move portable projects, close the app first, then copy the old jobs folder
+     into the installed app folder. No automatic migration is performed.

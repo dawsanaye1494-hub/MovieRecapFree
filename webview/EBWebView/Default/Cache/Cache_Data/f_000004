@@ -1,0 +1,414 @@
+(()=>{
+ const el=id=>document.getElementById(id);
+ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ async function api(path,body,method){const o=body===undefined?{method:method||'GET'}:{method:method||'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)};
+  const r=await fetch(path,o);let j={};try{j=await r.json()}catch(e){throw new Error('The app answered with an error ('+r.status+')')}if(!r.ok||j.error){const e=new Error(j.error||'Request failed');e.data=j;throw e}return j}
+ async function upload(path,files,field='file'){const f=new FormData();for(const x of files)f.append(field,x);const r=await fetch(path,{method:'POST',body:f});let j={};try{j=await r.json()}catch(e){throw new Error('Upload failed ('+r.status+')')}if(!r.ok||j.error)throw new Error(j.error||'Upload failed');return j}
+ const msg=(s,bad)=>{el('nwMsg').className=bad?'err':'muted';el('nwMsg').textContent=s};
+ const ago=t=>{if(!t)return'';const s=Date.now()/1000-t;if(s<3600)return Math.max(1,Math.round(s/60))+' min ago';if(s<86400)return Math.round(s/3600)+' h ago';if(s<86400*45)return Math.round(s/86400)+' d ago';if(s<86400*365)return Math.round(s/86400/30.4)+' months ago';const y=Math.floor(s/86400/365);return y+(y>1?' years ago':' year ago')};
+ const when=t=>t?new Date(t*1000).toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+ const ageCls=t=>!t?'unk':Date.now()/1000-t<86400*2?'new':Date.now()/1000-t>86400*30?'old':'';
+ const fmtS=s=>{s=Math.round(s||0);return s>=60?Math.floor(s/60)+'m '+String(s%60).padStart(2,'0')+'s':s+'s'};
+ let META=null,P=null,cat='sport',feed=null,findMode='news',step='find',timer=null,saveT=null,saving=null,poll=null,pendPoll=null,lenSel=60,langSel='my',thGroup='all';
+ const SAY_CPS={my:11,en:15,zh:4.6,ja:7.5,ko:6.5,th:13,lo:11,km:11};
+ /* v103: languages chosen in the language step before News opens */
+ let pendLang=null;
+ const LANGS=()=>(window.OL&&OL.list&&OL.list.length?OL.list:[{id:'my',name:'Burmese',native:'မြန်မာ'},{id:'en',name:'English',native:'English'}]);
+ function langSelects(){const a=el('nwLangSel'),b=el('nwSubSel');if(!a||a.options.length)return;
+  for(const l of LANGS()){const o=document.createElement('option');o.value=l.id;o.textContent=l.native+(l.native!==l.name?' · '+l.name:'');a.append(o)}
+  const s0=document.createElement('option');s0.value='';s0.textContent='Same as narration';b.append(s0);
+  for(const l of LANGS()){const o=document.createElement('option');o.value=l.id;o.textContent=l.native+(l.native!==l.name?' · '+l.name:'');b.append(o)}
+  const sn=document.createElement('option');sn.value='none';sn.textContent='No captions';b.append(sn);
+  a.onchange=()=>{langSel=a.value;setScriptLang(langSel)};b.onchange=()=>{if(P){P.style.sub_lang=b.value;dirty()}else pendLang={v:langSel,sub:b.value}};
+  a.value=langSel;b.value=pendLang?pendLang.sub:''}
+ window.newsSetLang=(v,sub)=>{pendLang={v,sub:sub===v?'':sub};langSel=v;
+  if(el('nwLangSel')&&el('nwLangSel').options.length){el('nwLangSel').value=v;el('nwSubSel').value=pendLang.sub}if(P){P.script.lang=v;P.style.sub_lang=pendLang.sub;fill();dirty()}};
+
+ /* ---------- open / close ---------- */
+  async function openStudio(want){el('newsModal').classList.remove('hide');
+  try{if(!META){META=await api('/news/meta');buildStatic()}else{META.has_key=(await api('/news/meta')).has_key}
+   el('nwKeyHint').textContent=META.has_key?'Gemini key ✓':'No Gemini key yet — 🔑 API Key at the top (free), or use the other two ways';
+   await loadProjects();
+   if(want&&want!==cat){if(P){await flush();P=null;el('nwProjects').value='';stepsState()}go('find');setCat(want)}
+   else if(!P&&!el('nwGrid').children.length)loadFeed()}catch(e){msg(e.message,true)}}
+  el('newsBtn').onclick=()=>openStudio(null);
+ el('nwClose').onclick=async()=>{await flush();el('nwVid').pause();el('newsModal').classList.add('hide')};
+
+ function buildStatic(){
+  const cats=el('nwCats');cats.replaceChildren();
+  for(const c of META.categories){const b=document.createElement('button');b.textContent=c.name;b.dataset.v=c.id;if(c.id===cat)b.className='on';b.onclick=()=>setCat(c.id);cats.append(b)}
+  feeds();
+  const cs=el('nwCat');cs.replaceChildren();for(const c of META.categories){const o=document.createElement('option');o.value=c.id;o.textContent=c.name;cs.append(o)}
+  const ln=el('nwLen');ln.replaceChildren();for(const s of META.lengths){const b=document.createElement('button');b.dataset.v=s;b.textContent=s<60?s+' s':(s/60)+' min';if(s===lenSel)b.className='on';ln.append(b)}
+  seg('nwLen',v=>{lenSel=+v;el('nwLenMin').value='';lenHint()});langSelects();
+  const groups=[['all','All'],['news','News'],['world','World'],['sport','Sports'],['strange','Strange'],['movie','Movies'],['science','Science'],['tech','Tech'],['business','Business'],['games','Games'],['cars','Cars'],['myanmar','Myanmar'],['fun','Fun']];
+  const g=el('nwThG');g.replaceChildren();for(const [id,name] of groups){const b=document.createElement('button');b.textContent=name;b.dataset.v=id;if(id===thGroup)b.className='on';b.onclick=()=>{thGroup=id;mark(g,b);themes()};g.append(b)}
+  const vs=el('nwVoice');vs.replaceChildren();
+  const add=(v,t)=>{const o=document.createElement('option');o.value=v;o.textContent=t;vs.append(o)};
+  for(const v of META.voices)add(v.id,`${v.name} · ${v.gender==='f'?'female':'male'}${v.native?' · Burmese':' · English'}`);
+  add('my:nilar','My voice (colour) · from Nilar');add('my:thiha','My voice (colour) · from Thiha');add('sv:nilar','My voice (style copy) · from Nilar');add('sv:thiha','My voice (style copy) · from Thiha');
+ }
+  function mark(box,b){box.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))}
+  function setCat(id){cat=id;feed=null;const cats=el('nwCats');const b=cats.querySelector(`[data-v="${id}"]`);if(b)mark(cats,b);feeds();funnyUi();
+   if(findMode==='video'){el('nwVQ').value='';loadVideos()}else loadFeed()}
+  function funnyUi(){}
+  function modeRows(){const v=findMode;el('nwNewsRows').classList.toggle('hide',v!=='news');el('nwVidRows').classList.toggle('hide',v!=='video');
+   el('nwFeeds').classList.toggle('hide',v!=='news')}
+ function seg(id,cb){const box=el(id);if(box.dataset.bound)return;box.dataset.bound=1;box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!box.contains(b))return;mark(box,b);cb(b.dataset.v)})}
+ function setSeg(id,v){el(id).querySelectorAll('button').forEach(b=>b.classList.toggle('on',String(b.dataset.v)===String(v)))}
+ function feeds(){const box=el('nwFeeds');box.replaceChildren();const c=META.categories.find(c=>c.id===cat);if(!c)return;
+  const all=document.createElement('button');all.textContent='All sites';if(feed===null)all.className='on';all.onclick=()=>{feed=null;mark(box,all);loadFeed()};box.append(all);
+  c.feeds.forEach((n,i)=>{const b=document.createElement('button');b.textContent=n;if(feed===i)b.className='on';b.onclick=()=>{feed=i;mark(box,b);loadFeed()};box.append(b)})}
+
+ /* ---------- step 1: find ---------- */
+ let findSeq=0;
+ async function loadFeed(){const my=++findSeq;el('nwFindMsg').className='muted';el('nwFindMsg').textContent='Loading news…';el('nwGrid').replaceChildren();
+  try{const j=await api('/news/feed',{category:cat,feed});if(my!==findSeq)return;showItems(j)}catch(e){if(my===findSeq){el('nwFindMsg').className='err';el('nwFindMsg').textContent=e.message+' — check the internet / VPN'}}}
+  async function search(){const q=el('nwQ').value.trim();if(!q)return;const my=++findSeq;el('nwFindMsg').className='muted';el('nwFindMsg').textContent='Searching Google News…';el('nwGrid').replaceChildren();
+   try{const j=await api('/news/search',{q,lang:el('nwQLang').value});if(my!==findSeq)return;showItems(j)}catch(e){if(my===findSeq){el('nwFindMsg').className='err';el('nwFindMsg').textContent=e.message}}}
+ el('nwQGo').onclick=search;el('nwQ').onkeydown=e=>{if(e.key==='Enter')search()};
+ /* videos: search YouTube, or paste any video link -> news from that video */
+  seg('nwMode',v=>{findMode=v;modeRows();
+   el('nwGrid').replaceChildren();if(v==='video')loadVideos();else loadFeed()});
+ async function loadVideos(){const q=el('nwVQ').value.trim()||(META.video_q||{})[cat]||'news';const my=++findSeq;el('nwFindMsg').className='muted';el('nwFindMsg').textContent='Searching videos…';el('nwGrid').replaceChildren();
+  try{const j=await api('/news/videos',{q,sort:el('nwVSort').value});if(my!==findSeq)return;showItems(j)}catch(e){if(my===findSeq){el('nwFindMsg').className='err';el('nwFindMsg').textContent=e.message+' — check the internet / VPN'}}}
+ el('nwVGo').onclick=loadVideos;el('nwVQ').onkeydown=e=>{if(e.key==='Enter')loadVideos()};el('nwVSort').onchange=loadVideos;
+ el('nwVUrlGo').onclick=()=>{const u=el('nwVUrl').value.trim();if(u)openArticle(u,{title:'',summary:''},null,true)};el('nwVUrl').onkeydown=e=>{if(e.key==='Enter')el('nwVUrlGo').click()};
+ const nfmt=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||'');
+ function showItems(j){const g=el('nwGrid');g.replaceChildren();
+  const vids=j.items.some(i=>i.kind==='video');
+  el('nwFindMsg').textContent=j.items.length?`${j.items.length} ${vids?'videos':'stories'} · click one to make a ${cat==='funny'?'funny':'news'} video${j.errors?.length?' · some sites did not answer: '+j.errors.join(', '):''}`:'No stories found'+(j.errors?.length?' — '+j.errors.join(', '):'');
+  for(const it of j.items){const c=document.createElement('div');c.className='nwcard';c.title=it.title;
+   const th=document.createElement('div');th.className='th';if(it.image)th.style.backgroundImage=`url("${it.image.replace(/"/g,'%22')}")`;const sp=document.createElement('span');sp.textContent=it.source||'';th.append(sp);
+   if(it.kind==='video'){const pl=document.createElement('i');pl.className='play';pl.textContent='▶';th.append(pl);if(it.duration){const du=document.createElement('span');du.className='dur';du.textContent=fmtS(it.duration);th.append(du)}
+    const ag=document.createElement('span');ag.className='age '+ageCls(it.date);ag.textContent=it.date?'🕒 '+ago(it.date):'upload time unknown';th.append(ag);
+    if(it.date)c.title=it.title+'\nUploaded: '+when(it.date)}
+   const b=document.createElement('b');b.textContent=it.title;const s=document.createElement('small');s.textContent=(it.kind==='video'?[it.date?'Uploaded '+ago(it.date):'',it.views?nfmt(it.views)+' views':'']:[ago(it.date),it.summary]).filter(Boolean).join(' · ');
+   c.append(th,b,s);c.onclick=()=>openArticle(it.link,it,c,it.kind==='video');g.append(c)}}
+ async function openArticle(url,fb,card,asVideo){if(card)card.classList.add('busy');msg('Reading the article…');
+  if(card)msg(card.querySelector('.play')?'Reading the video (title, description, captions)…':'Reading the article…');
+  if(asVideo&&!card)msg('Reading the video (title, description, captions)…');
+  try{const a=await api(asVideo?'/news/video':'/news/article',{url,fallback:fb||{},category:cat});await flush();P=await api('/news/projects',{category:cat,article:a,lang:langSel,sub_lang:pendLang?pendLang.sub:''});
+   await loadProjects();fill();go('story');
+   if(a.kind==='video'){pendingWatch();msg(a.note||(`Video story loaded${a.captions?' with its spoken words':''} · the video is downloading as a clip (Pictures & clips)`),!!a.note)}
+   else msg(a.note||('Article loaded · '+(a.images.length?a.images.length+' pictures found (first ones are being added)':'no pictures found')),!!a.note)}
+  catch(e){msg(e.message,true)}finally{if(card)card.classList.remove('busy')}}
+ el('nwUrlGo').onclick=()=>{const u=el('nwUrl').value.trim();if(u)openArticle(u,{title:'',summary:''},null)};
+ el('nwBlank').onclick=async()=>{await flush();try{P=await api('/news/projects',{category:cat,lang:langSel,sub_lang:pendLang?pendLang.sub:''});await loadProjects();fill();go('story');el('nwText').focus();msg('Write or paste your story text, then write the script.')}catch(e){msg(e.message,true)}};
+
+ /* ---------- projects ---------- */
+ async function loadProjects(){const j=await api('/news/projects');const s=el('nwProjects');s.replaceChildren();
+  const o=document.createElement('option');o.value='';o.textContent=j.items.length?`My news projects (${j.items.length})…`:'No projects yet';s.append(o);
+  for(const p of j.items){const x=document.createElement('option');x.value=p.id;x.textContent=(p.has_video?'✓ ':'')+(p.title||'Untitled').slice(0,60)+(p.busy?' · working':'');s.append(x)}
+  s.value=P?P.id:'';stepsState()}
+ el('nwProjects').onchange=async e=>{const id=e.target.value;if(!id)return;await flush();try{P=await api('/news/p/'+id);fill();go(P.has_video?'render':P.script.beats.length?'script':'story');watchJob()}catch(err){msg(err.message,true)}};
+ el('nwNew').onclick=async()=>{await flush();P=null;el('nwProjects').value='';stepsState();go('find');if(!el('nwGrid').children.length)loadFeed()};
+ el('nwDel').onclick=async()=>{if(!P)return;if(!await uiConfirm('Delete this news project and its video?'))return;try{await api('/news/p/'+P.id,undefined,'DELETE');P=null;await loadProjects();go('find')}catch(e){msg(e.message,true)}};
+ function stepsState(){el('nwSteps').querySelectorAll('button').forEach(b=>{b.disabled=b.dataset.s!=='find'&&!P});el('nwDel').disabled=!P}
+ el('nwSteps').onclick=async e=>{const b=e.target.closest('button');if(!b||b.disabled)return;await flush();go(b.dataset.s)};
+ function go(s){step=s;if(s!=='render')el('nwVid').pause();if(s!=='style')el('nwVAud').pause();el('nwSteps').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.s===s));
+  for(const id of ['find','story','media','script','style','render'])el('nw_'+id).classList.toggle('hide',id!==s);
+  if(!P)return;
+  if(s==='media'){drawMedia();pendingWatch()}if(s==='script'){drawBeats();loadCredits()}if(s==='style'){thGroup=themeOf(P.style.theme).group||'all';const g=el('nwThG').querySelector(`[data-v="${thGroup}"]`);if(g)mark(el('nwThG'),g);themes();pvBeats();loadPresets()}if(s==='render')drawRender()}
+
+ /* ---------- fill the form from P ---------- */
+ function fill(){if(!P)return;stepsState();const a=P.article,sc=P.script,st=P.style;
+  el('nwTitle').value=P.title||'';el('nwText').value=a.text||'';el('nwTextN').textContent=(a.text||'').length+' characters';el('nwNote').textContent=a.note||'';
+  el('nwSrc').classList.toggle('hide',!a.url);langSel=sc.lang||'my';langSelects();el('nwLangSel').value=langSel;el('nwSubSel').value=st.sub_lang||'';lenHint();el('nwCat').value=P.category||'world';vidBox();
+  el('nwHead').value=sc.headline||'';el('nwKick').value=sc.kicker||'';el('nwBadge').value=sc.badge||'';el('nwTLab').value=sc.ticker_label||'';
+  el('nwTick').value=(sc.ticker||[]).join('\n');el('nwCta').value=sc.cta||'';
+  el('nwVoice').value=st.voice;el('nwRate').value=st.rate;el('nwRateV').textContent=(st.rate>0?'+':'')+st.rate+'%';
+  el('nwMood').value=st.mood;el('nwMVol').value=Math.round(st.music_vol*100);el('nwMVolV').textContent=Math.round(st.music_vol*100)+'%';
+  el('nwCVol').value=Math.round(st.clip_vol*100);el('nwCVolV').textContent=Math.round(st.clip_vol*100)+'%';
+  el('nwMusicN').textContent=P.has_music?'music file added ✓':'';
+  for(const [id,k] of [['nwSfx','sfx'],['nwKara','karaoke'],['nwCaps','captions'],['nwIntro','intro'],['nwOutro','outro'],['nwCtaV','cta_voice'],['nwDate','date'],['nwCred','credits']])el(id).checked=!!st[k];
+  credPick();
+  el('nwCredX').value=(sc.credits_extra||[]).join('\n');
+  el('nwCFont').value=st.cap_font;el('nwCSize').value=st.cap_size||0;el('nwCSizeV').textContent=st.cap_size?st.cap_size+'px':'auto';
+  el('nwTrans').value=st.transition||'';el('nwHl').value=st.hl||themeOf(st.theme).hl;
+  el('nwChan').value=st.channel||'';el('nwHandle').value=st.handle||'';el('nwLive').value=st.live_text||'LIVE';
+  setSeg('nwRatio',st.ratio);setSeg('nwLayout',st.layout);setSeg('nwWm',st.wm_style);setSeg('nwWmPos',st.wm_pos);setSeg('nwPlat',st.platform||'youtube');platHint();
+  logoState();est();
+  funnyLook();if(step==='media')drawMedia();if(step==='script'){drawBeats();loadCredits()}if(step==='style'){themes();pvBeats()}if(step==='render')drawRender()}
+ function funnyLook(){if(!P)return;const f=P.category==='funny';el('nwStudio').textContent=f?'😂 Funny Studio':'📰 News Studio';el('nwGo').textContent=f?'🎬 Make funny video':'🎬 Make news video'}
+ /* v85: end credits — website, link and licence of every picture / clip the video shows */
+ let credT=null,credSeq=0;
+ async function loadCredits(){if(!P)return;const my=++credSeq,id=P.id;try{await flush();const j=await api(`/news/p/${id}/credits`);if(my!==credSeq||!P||P.id!==id)return;
+   el('nwCredSec').textContent=j.on?`· about ${fmtS(j.seconds)} at the end of the video`:'· not added (the video ends with the Subscribe / Follow ending)';
+   if(P&&P.style.credits)el('nwCredPickH').textContent=`About ${fmtS(j.seconds)} at the very end: websites, links and licences of the pictures and clips.`;
+   const box=el('nwCredList');box.replaceChildren();
+   if(!j.items.length){box.textContent='No pictures or clips in the beats yet.';}
+   j.items.forEach((e,i)=>{const d=document.createElement('div');d.innerHTML=`<b>${i+1}. ${esc(e.head)}</b>`+e.rows.filter(r=>r[1]).map(r=>r[0]==='Link'?`<span>${esc(r[0])}: <a href="#" class="srcl" data-u="${esc(r[1])}">${esc(r[1])}</a></span>`:`<span>${esc(r[0])}: ${esc(r[1])}</span>`).join('');box.append(d)});
+   el('nwCredTxt').value=j.text;el('nwCredDl').href=`/news/p/${id}/credits.txt`}catch(e){}}
+ el('nwCredCopy').onclick=async()=>{const t=el('nwCredTxt');let ok=false;try{await navigator.clipboard.writeText(t.value);ok=true}catch(e){t.select();try{ok=document.execCommand('copy')}catch(_){}}
+  el('nwCredMsg').textContent=ok?'Copied ✓ — paste it into your video description':'Select the text and copy it (Ctrl+C)'};
+ const themeOf=id=>META.themes.find(t=>t.id===id)||META.themes[0];
+ function logoState(){const has=P&&P.has_logo;el('nwLogoImg').classList.toggle('hide',!has);el('nwLogoDel').classList.toggle('hide',!has);if(has)el('nwLogoImg').src='/news/p/'+P.id+'/logo.png?'+Date.now()}
+
+ /* ---------- collect + autosave ---------- */
+ function collect(){if(!P)return null;const sc=P.script,st=P.style;
+  P.title=el('nwTitle').value.trim()||P.title;P.article.text=el('nwText').value;
+  Object.assign(sc,{lang:langSel,headline:el('nwHead').value,kicker:el('nwKick').value,badge:el('nwBadge').value,ticker_label:el('nwTLab').value,
+   ticker:el('nwTick').value.split('\n').map(s=>s.trim()).filter(Boolean),cta:el('nwCta').value,
+   credits_extra:el('nwCredX').value.split('\n').map(s=>s.trim()).filter(Boolean)});
+  Object.assign(st,{voice:el('nwVoice').value,rate:+el('nwRate').value,mood:el('nwMood').value,music_vol:el('nwMVol').value/100,clip_vol:el('nwCVol').value/100,
+   sfx:el('nwSfx').checked,karaoke:el('nwKara').checked,captions:el('nwCaps').checked,intro:el('nwIntro').checked,outro:el('nwOutro').checked,cta_voice:el('nwCtaV').checked,date:el('nwDate').checked,credits:el('nwCred').checked,
+   cap_font:el('nwCFont').value,cap_size:+el('nwCSize').value,sub_lang:el('nwSubSel').value,transition:el('nwTrans').value,channel:el('nwChan').value,handle:el('nwHandle').value,live_text:el('nwLive').value});
+  return {title:P.title,category:P.category,article:{text:P.article.text,title:P.article.title},script:sc,style:st,rev:P.rev||0}}
+ function dirty(){if(!P)return;clearTimeout(saveT);saveT=setTimeout(flush,700);est()}
+ async function flush(){clearTimeout(saveT);saveT=null;if(!P)return;const body=collect();if(!body)return;
+  const id=P.id;saving=(async()=>{try{const q=await api('/news/p/'+id,body);if(P&&P.id===id){P.est=q.est;P.script.beats.forEach((b,i)=>{if(q.script.beats[i])b.media=q.script.beats[i].media});est()}}catch(e){msg('Not saved: '+e.message,true)}})();await saving}
+for(const id of ['nwTitle','nwText','nwHead','nwKick','nwBadge','nwTLab','nwTick','nwCta','nwChan','nwHandle','nwLive','nwCredX'])el(id).addEventListener('input',dirty);
+for(const id of ['nwVoice','nwMood','nwCFont','nwTrans','nwSfx','nwKara','nwCaps','nwIntro','nwOutro','nwCtaV','nwDate','nwCred'])el(id).addEventListener('change',dirty);
+ el('nwCred').addEventListener('change',()=>{if(P){P.style.credits=el('nwCred').checked;pvBeats();credPick()}});
+ /* v86: add the end credits page or not — a clear choice in the Make video step (same switch as in Style) */
+ function credPick(){if(!P)return;const on=!!P.style.credits;setSeg('nwCredPick',on?'on':'off');
+  el('nwCredPickH').textContent=on?'Websites, links and licences of the pictures and clips are shown at the very end.':'The video ends with the Subscribe / Follow ending — no credits page. (You can still copy the credits into the description below.)'}
+ seg('nwCredPick',v=>{if(!P)return;P.style.credits=v==='on';el('nwCred').checked=P.style.credits;credPick();pvBeats();dirty();loadCredits();
+  msg(P.style.credits?'📜 The end credits page will be added at the end':'No end credits page in this video')});
+ el('nwCredX').addEventListener('change',()=>{clearTimeout(credT);credT=setTimeout(loadCredits,900)});
+ el('nwText').addEventListener('input',()=>{el('nwTextN').textContent=el('nwText').value.length+' characters';lenHint()});
+ /* ---------- video length (up to 15 min) ---------- */
+ el('nwLenMin').addEventListener('input',()=>{const v=parseFloat(el('nwLenMin').value);if(!(v>=0.5&&v<=15))return;lenSel=Math.round(v*60);setSeg('nwLen',lenSel);lenHint()});
+ function lenHint(){const h=el('nwLenHint');if(!h)return;const t=el('nwText').value.replace(/\s+/g,' ').trim(),my=/[\u1000-\u109F]/.test(t);
+  const have=t.length/(my?11:15),parts=lenSel<=180?1:Math.ceil(lenSel/150),out=[];
+  if(parts>1)out.push(`Long video: Gemini plans it, then writes ${parts} parts at the same time.`);
+  const short=lenSel>1.4*Math.max(20,have);
+  if(short)out.push(`Your story text is enough for about ${fmtS(have)} — Gemini will add background facts. For a better ${fmtS(lenSel)} video add more text (Wikipedia button, or paste other articles about it).`);
+  if(lenSel>180)out.push('The Gemini website may stop early on very long scripts; the free key way writes long ones best.');
+  h.textContent=out.join(' ');h.className='nwsmall'+(short?' warn':'')}
+ el('nwRate').oninput=()=>{const v=+el('nwRate').value;el('nwRateV').textContent=(v>0?'+':'')+v+'%';dirty()};
+ el('nwMVol').oninput=()=>{el('nwMVolV').textContent=el('nwMVol').value+'%';dirty()};
+ el('nwCVol').oninput=()=>{el('nwCVolV').textContent=el('nwCVol').value+'%';dirty()};
+ el('nwCSize').oninput=()=>{const v=+el('nwCSize').value;el('nwCSizeV').textContent=v?v+'px':'auto';dirty()};
+ el('nwHl').oninput=()=>{if(P){P.style.hl=el('nwHl').value;dirty()}};
+ el('nwHlReset').onclick=()=>{if(!P)return;P.style.hl='';el('nwHl').value=themeOf(P.style.theme).hl;dirty()};
+ seg('nwRatio',v=>{if(P){P.style.ratio=v;dirty()}});seg('nwLayout',v=>{if(P){P.style.layout=v;dirty()}});
+ seg('nwWm',v=>{if(P){P.style.wm_style=v;dirty()}});seg('nwWmPos',v=>{if(P){P.style.wm_pos=v;dirty()}});
+ function setScriptLang(v){if(P){P.script.lang=v;dirty()}}
+ /* platform: YouTube ends with Subscribe, Facebook / TikTok with Follow (the ending line is changed to match) */
+ const PLAT_HINT={youtube:'Ending: red SUBSCRIBE button + bell, the narrator asks to Subscribe.',facebook:'Ending: blue Follow button for your page, the narrator asks to Follow.',tiktok:'Ending: profile picture with + and a red Follow button, the narrator asks to Follow.'};
+ function platHint(){if(P)el('nwPlatHint').textContent=PLAT_HINT[P.style.platform||'youtube']||''}
+ async function reloadP(){const id=P.id;await flush();if(!P||P.id!==id)return;P=await api('/news/p/'+id);fill()}
+ seg('nwPlat',async v=>{if(!P)return;P.style.platform=v;platHint();try{await reloadP();pvBeats();msg(v==='youtube'?'YouTube: the ending asks viewers to Subscribe':'The ending asks viewers to Follow ('+(v==='facebook'?'Facebook page':'TikTok')+')');
+  if(!el('nwFrame').classList.contains('hide')&&+el('nwPvBeat').value===P.script.beats.length)preview()}catch(e){msg(e.message,true)}});
+ el('nwCat').onchange=async()=>{if(!P)return;P.category=el('nwCat').value;try{await reloadP();thGroup=themeOf(P.style.theme).group;msg('News type changed · template: '+themeOf(P.style.theme).name+' ('+(themeOf(P.style.theme).design_name||'')+')')}catch(e){msg(e.message,true)}};
+ function vidBox(){if(!P)return;const has=P.media.some(m=>m.kind==='video'&&m.audio),isV=P.article.kind==='video',txt=P.article.text||'';
+  const dt=P.article.date;el('nwVidWhen').textContent=isV?(dt?`🕒 Uploaded ${ago(dt)} · ${when(dt)}`:'🕒 Upload time unknown'):'';el('nwVidWhen').className=isV&&dt&&Date.now()/1000-dt>86400*30?'warn':'nwsmall';
+  el('nwVidBox').classList.toggle('hide',!(has||isV));el('nwSpeech').disabled=!has;
+  el('nwVidMsg').textContent=has?(txt.includes('WHAT IS SAID IN THE VIDEO')?'The spoken words are in the story ✓ (press again to listen once more)':'Reads what is said in the clip (free, on this PC) and adds it to the story.'):(P.pending&&P.pending.length?'The video clip is still downloading…':'Add the video clip first (Pictures & clips).')}
+ el('nwSpeech').onclick=async()=>{if(!P)return;await flush();try{await api(`/news/p/${P.id}/transcribe`,{});el('nwWLog').classList.remove('hide');el('nwWLog').textContent='';el('nwSpeech').disabled=true;watchJob()}catch(e){msg(e.message,true)}};
+ function est(){if(!P)return;const cps=SAY_CPS[langSel]||11,r=1+(+el('nwRate').value||0)/100;let tot=0;
+  P.script.beats.forEach((b,i)=>{const s=b.say?Math.max(2.5,0.75+b.say.replace(/\s/g,'').length/(cps*r)):(b.hold||3.5);tot+=s;const e=document.querySelector(`#nwBeats [data-i="${i}"] .es`);if(e)e.textContent='≈ '+fmtS(s)});
+  if(P.style.outro)tot+=3.8;if(P.style.credits&&P.est&&P.est.credits)tot+=P.est.credits;el('nwEst').textContent=P.script.beats.length?`· ${P.script.beats.length} beats · about ${fmtS(tot)}`:'';el('nwSum').textContent=P.script.beats.length?`About ${fmtS(tot)} · ${P.style.ratio} · ${themeOf(P.style.theme).name}`:''}
+
+ /* ---------- step 2: story + script writing ---------- */
+ el('nwSrc').onclick=()=>{if(!P?.article.url)return;openExternal(P.article.url)};
+ function openExternal(u){if(window.pywebview?.api?.open_reference)pywebview.api.open_reference(u);else window.open(u,'_blank','noopener')}
+ /* v84: where every picture / clip comes from — website, link, licence */
+ const shortUrl=u=>{try{const x=new URL(u);return (x.hostname.replace(/^www\./,'')+x.pathname).slice(0,70)}catch(e){return String(u||'').slice(0,70)}};
+ const ORIGIN={article:'From the article',clip:'Video clip',web:'Web picture',picked:'Picked by you',upload:'Your file',download:'Downloaded video'};
+ function srcLine(m){const s=m&&m.source;if(!s)return '';
+  const link=s.page?`<a href="#" class="srcl" data-u="${esc(s.page)}" title="Open ${esc(s.page)}">${esc(shortUrl(s.page))}</a>`:'<span class="muted">—</span>';
+  return `<div class="nwsrc"><span class="o">${esc(ORIGIN[s.origin]||'Picture')}</span><span title="Website">🌐 ${esc(s.site||'—')}</span><span title="Source link">🔗 ${link}</span><span title="Licence">📜 ${esc(s.license||'—')}</span></div>`}
+ document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('.srcl');if(a){e.preventDefault();e.stopPropagation();openExternal(a.dataset.u)}});
+ el('nwOpenGem').onclick=()=>openExternal('https://gemini.google.com/app');
+ el('nwWiki').onclick=async()=>{const q=el('nwWikiQ').value.trim();if(!q)return;msg('Reading Wikipedia…');
+  try{const w=await api('/news/wiki',{q,lang:'en'});el('nwText').value=(el('nwText').value.trim()+`\n\nBACKGROUND (${w.title}, Wikipedia): ${w.extract}`).trim();el('nwTextN').textContent=el('nwText').value.length+' characters';dirty();
+   if(w.image&&P){try{await api(`/news/p/${P.id}/media/url`,{url:w.image,credit:'Wikipedia'});P=await api('/news/p/'+P.id)}catch(e){}}msg('Background added from Wikipedia'+(w.image?' (with its picture)':''))}catch(e){msg(e.message,true)}};
+ async function startWrite(mode){if(!P)return;await flush();try{await api(`/news/p/${P.id}/write`,{mode,seconds:lenSel,lang:langSel});el('nwWLog').classList.remove('hide');el('nwWLog').textContent='';watchJob()}catch(e){msg(e.message,true)}}
+ el('nwGem').onclick=()=>startWrite('gemini');el('nwGoo').onclick=()=>startWrite('google');
+ el('nwCopy').onclick=async()=>{if(!P)return;await flush();try{const j=await api(`/news/p/${P.id}/prompt`,{seconds:lenSel,lang:langSel});const t=el('nwPrompt');t.value=j.prompt;t.classList.remove('hide');
+   let ok=false;try{await navigator.clipboard.writeText(j.prompt);ok=true}catch(e){t.select();try{ok=document.execCommand('copy')}catch(_){}}
+   el('nwCopyMsg').textContent=ok?'Copied ✓ — paste it in gemini.google.com':'Select the text below and copy it (Ctrl+C)'}catch(e){msg(e.message,true)}};
+ el('nwUse').onclick=async()=>{if(!P)return;const t=el('nwAnswer').value.trim();if(!t)return msg('Paste Gemini\'s answer first',true);await flush();
+  try{P=await api(`/news/p/${P.id}/answer`,{text:t,lang:langSel});fill();await loadProjects();go('script');msg(`✓ ${P.script.beats.length} beats from the pasted answer`+(P.pics_job?' · finding a matching picture for every beat…':''));
+   if(P.pics_job){el('nwPLog').classList.remove('hide');el('nwPLog').textContent='';watchJob()}}catch(e){msg(e.message,true)}};
+
+ /* ---------- background jobs (write / render) ---------- */
+ function watchJob(){clearInterval(poll);if(!P)return;const id=P.id;
+  const tick=async()=>{if(!P||P.id!==id){clearInterval(poll);return}let s;try{s=await api(`/news/p/${id}/status`)}catch(e){return}
+   const lg=s.kind==='render'?el('nwRLog'):s.kind==='pics'?el('nwPLog'):el('nwWLog');if(s.log.length){lg.classList.remove('hide');lg.textContent=s.log.join('\n');lg.scrollTop=lg.scrollHeight}
+   if(s.kind==='render'){el('nwRBar').style.width=s.progress+'%';el('nwGo').disabled=s.busy;el('nwStop').classList.toggle('hide',!s.busy)}
+   if(s.busy){msg((s.kind==='render'?'Making the video… ':s.kind==='transcribe'?'Listening to the clip… ':s.kind==='pics'?'Finding pictures that match the beats… ':'Writing the script… ')+s.progress+'%');return}
+   clearInterval(poll);
+   if(s.failed){msg(s.failed,true);if(s.kind==='render')el('nwGo').disabled=false;if(s.kind==='transcribe')vidBox();if(s.kind==='pics')el('nwPics').disabled=false;return}
+   if(s.done){clearTimeout(saveT);P=await api('/news/p/'+id);fill();await loadProjects();
+    if(s.kind==='write'){go('script');msg(`✓ Script ready — ${P.script.beats.length} beats, ${new Set(P.script.beats.map(b=>b.media).filter(Boolean)).size} different pictures / clips. Check the words and pictures, then choose a style.`)}
+    else if(s.kind==='pics'){el('nwPics').disabled=false;if(step==='script')drawBeats();msg(`✓ Pictures matched — ${new Set(P.script.beats.map(b=>b.media).filter(Boolean)).size} different pictures / clips for ${P.script.beats.length} beats`)}
+    else if(s.kind==='transcribe'){go('story');msg('✓ The spoken words are added to the story — now write the script')}
+    else{drawRender();msg('✓ Your news video is ready')}}};
+  poll=setInterval(tick,1000);tick()}
+
+ /* ---------- step 3: media ---------- */
+ const mThumb=(m,b)=>m&&m.kind==='video'&&b&&(b.out||0)>(b.in||0)+0.3?`/news/p/${P.id}/clipframe/${m.id}?t=${(((b.in||0)+(b.out||0))/2).toFixed(1)}`:`/news/p/${P.id}/media/${m.id}/thumb`;
+ const momTxt=b=>(b.out||0)>(b.in||0)+0.3?`👁 Shows the clip from ${(+b.in).toFixed(1)} s to ${(+b.out).toFixed(1)} s — the moment this beat talks about`:'';
+ function drawMedia(){if(!P)return;const box=el('nwMedia');box.replaceChildren();el('nwMediaN').textContent=`· ${P.media.length} items`+(P.pics_loading?' · adding article pictures…':'');
+  if(!P.media.length){const p=document.createElement('p');p.className='muted';p.textContent='No pictures or clips yet. Add some below — every beat shows one of them.';box.append(p)}
+  for(const m of P.media){const d=document.createElement('div');d.className='nwm';
+   const so=m.source||{};d.title=[m.name,so.site,so.page,so.license].filter(Boolean).join('\n');
+   d.innerHTML=`<img loading="lazy" src="${mThumb(m)}" alt=""><span class="k">${m.kind==='video'?'🎞 '+fmtS(m.len):'🖼 '+m.w+'×'+m.h}</span><button class="x" title="Remove">✕</button><div class="n">${esc(m.name)}</div>${srcLine(m)}`;
+   d.querySelector('.x').onclick=async()=>{try{await api(`/news/p/${P.id}/media/${m.id}`,undefined,'DELETE');P=await api('/news/p/'+P.id);drawMedia()}catch(e){msg(e.message,true)}};box.append(d)}
+  const art=el('nwArt');art.replaceChildren();const imgs=(P.article.images||[]);
+  if(!imgs.length){art.innerHTML='<p class="muted">No pictures were found in the article.</p>'}
+  for(const u of imgs){const d=document.createElement('div');d.className='nwm';d.innerHTML=`<img loading="lazy" referrerpolicy="no-referrer" src="${esc(u)}" alt=""><button class="btn add">+ Add</button><div class="n">${esc(u.split('/').pop().split('?')[0])}</div>`;
+   d.querySelector('.add').onclick=async ev=>{ev.target.disabled=true;try{await api(`/news/p/${P.id}/media/url`,{url:u,credit:P.article.source||''});P=await api('/news/p/'+P.id);drawMedia();msg('Picture added')}catch(e){msg(e.message,true);ev.target.disabled=false}};art.append(d)}
+  if(P.pics_loading){setTimeout(async()=>{if(P&&step==='media'){P=await api('/news/p/'+P.id);drawMedia()}},2500)}}
+ el('nwUp').onchange=async e=>{const fs=[...e.target.files];e.target.value='';if(!fs.length||!P)return;el('nwUpMsg').textContent='Adding '+fs.length+' file(s)…';
+  try{const j=await upload(`/news/p/${P.id}/media/upload`,fs);P=await api('/news/p/'+P.id);drawMedia();el('nwUpMsg').textContent=`${j.added.length} added`+(j.errors.length?' · '+j.errors.join(' · '):'')}catch(err){el('nwUpMsg').textContent=err.message}};
+ el('nwImgGo').onclick=async()=>{const u=el('nwImgUrl').value.trim();if(!u||!P)return;msg('Getting the picture…');try{await api(`/news/p/${P.id}/media/url`,{url:u});el('nwImgUrl').value='';P=await api('/news/p/'+P.id);drawMedia();msg('Picture added')}catch(e){msg(e.message,true)}};
+ el('nwComGo').onclick=async()=>{const q=el('nwComQ').value.trim();if(!q)return;const box=el('nwCom');box.innerHTML='<p class="muted">Searching…</p>';
+  try{const j=await api('/news/commons',{q});box.replaceChildren();if(!j.items.length)box.innerHTML='<p class="muted">No free pictures found.</p>';
+   for(const it of j.items){const d=document.createElement('div');d.className='nwm';d.title=it.title+(it.credit?' — '+it.credit:'');d.innerHTML=`<img loading="lazy" src="${esc(it.thumb)}" alt=""><button class="btn add">+ Add</button><div class="n">${esc(it.credit||it.title)}</div>`;
+    d.querySelector('.add').onclick=async ev=>{ev.target.disabled=true;try{await api(`/news/p/${P.id}/media/url`,{url:it.url,credit:it.credit,site:'Wikimedia Commons',page:it.page||'',license:it.credit||''});P=await api('/news/p/'+P.id);drawMedia();msg('Picture added (credit: '+(it.credit||'Wikimedia Commons')+')')}catch(e){msg(e.message,true);ev.target.disabled=false}};box.append(d)}}catch(e){box.innerHTML='';msg(e.message,true)}};
+ el('nwComQ').onkeydown=e=>{if(e.key==='Enter')el('nwComGo').click()};
+ el('nwDlBtn').onclick=async()=>{const box=el('nwDls');box.classList.toggle('hide');if(box.classList.contains('hide'))return;box.innerHTML='<p class="muted">Loading…</p>';
+  try{const j=await api('/news/downloads');box.replaceChildren();if(!j.items.length){box.innerHTML='<p class="muted">No finished downloads yet. Use "↓ Download window" or the video link box below.</p>';return}
+   for(const it of j.items){const r=document.createElement('div');r.className='nwpend';r.innerHTML=`<span>${esc(it.title)}</span><b class="nwsmall">${(it.size/1048576).toFixed(0)} MB</b><button class="ghost">+ Add</button>`;
+    r.querySelector('button').onclick=async ev=>{ev.target.disabled=true;ev.target.textContent='Adding…';try{await api(`/news/p/${P.id}/media/download`,{id:it.id});P=await api('/news/p/'+P.id);drawMedia();ev.target.textContent='Added ✓'}catch(e){msg(e.message,true);ev.target.disabled=false;ev.target.textContent='+ Add'}};box.append(r)}}catch(e){box.innerHTML='';msg(e.message,true)}};
+ el('nwOpenDl').onclick=()=>{const b=el('dlBtn');if(b)b.click()};
+ el('nwVidGo').onclick=async()=>{const u=el('nwVidUrl').value.trim();if(!u||!P)return;try{await api(`/news/p/${P.id}/media/link`,{url:u});el('nwVidUrl').value='';msg('Downloading the clip…');pendingWatch()}catch(e){msg(e.message,true)}};
+ function pendingWatch(){clearInterval(pendPoll);if(!P)return;const id=P.id;
+  const tick=async()=>{if(!P||P.id!==id){clearInterval(pendPoll);return}let j;try{j=await api(`/news/p/${id}/pending`)}catch(e){return}
+   const box=el('nwPend');box.replaceChildren();
+   for(const it of j.items){const r=document.createElement('div');r.className='nwpend';r.innerHTML=`<span>${esc(it.title||it.url)}</span><b class="${it.error?'err':'nwsmall'}">${it.error?esc(it.error):esc(it.step)+' '+(it.progress||0)+'%'}</b>`;
+    if(it.error){const x=document.createElement('button');x.className='ghost';x.textContent='✕';x.onclick=async()=>{await api(`/news/p/${id}/pending/${it.rid}`,undefined,'DELETE');tick()};r.append(x)}box.append(r)}
+   const run=j.items.find(i=>!i.error);if(run&&step!=='media'&&P.article.kind==='video')msg(`Downloading the video clip… ${run.progress||0}%`);
+   if(j.added){P=await api('/news/p/'+id);if(step==='media')drawMedia();vidBox();msg(P.article.kind==='video'?'✓ Video clip added — you can write the script now'+((P.article.text||'').includes('WHAT IS SAID IN THE VIDEO')?'':' (or first press 🎙 Get the spoken words)'):'Clip added ✓')}
+   if(!j.items.some(i=>!i.error))clearInterval(pendPoll)};
+  pendPoll=setInterval(tick,2000);tick()}
+
+ /* ---------- step 4: beats ---------- */
+ const TAGS=['','BREAKING','UPDATE','TRANSFER','RESULT','WEIRD','BOX OFFICE','TRAILER','EXCLUSIVE','LIVE'];
+ function drawBeats(){if(!P)return;const box=el('nwBeats');box.replaceChildren();const beats=P.script.beats;
+  if(!beats.length){const p=document.createElement('p');p.className='muted';p.textContent='No beats yet. Go to Story and write the script, or press "+ Add beat".';box.append(p)}
+  beats.forEach((b,i)=>{const d=document.createElement('div');d.className='nwbeat';d.dataset.i=i;const m=P.media.find(x=>x.id===b.media);
+   const opts=['<option value="">— no picture —</option>'].concat(P.media.map((x,k)=>`<option value="${x.id}" ${x.id===b.media?'selected':''}>${k+1}. ${x.kind==='video'?'🎞':'🖼'} ${esc(x.name.slice(0,40))}</option>`)).join('');
+   const sel=(arr,v)=>arr.map(([a,t])=>`<option value="${a}" ${a===v?'selected':''}>${t}</option>`).join('');
+   d.innerHTML=`<div class="hdr"><b>Beat ${i+1} <span class="muted es"></span></b><button class="ghost pv" title="Preview this beat">👁</button><button class="ghost up" ${i?'':'disabled'}>▲</button><button class="ghost dn" ${i<beats.length-1?'':'disabled'}>▼</button><button class="ghost rm" title="Delete beat">✕</button></div>
+    <textarea class="say" rows="3" style="width:100%" placeholder="What the narrator says">${esc(b.say)}</textarea>
+    <div class="g"><div><label>On-screen headline</label><input type="text" class="title" value="${esc(b.title)}"></div><div><label>Small line under it</label><input type="text" class="sub" value="${esc(b.sub)}"></div><div><label>Badge</label><input type="text" class="nb-tag" list="nwTags" value="${esc(b.tag)}"></div></div>
+    <div class="g2"><img class="mt" ${m?`src="${mThumb(m,b)}"`:''} alt=""><div><label>Picture / clip</label><select class="media">${opts}</select></div>
+     <div class="vid ${m&&m.kind==='video'?'':'hide'}"><label>Clip from – to (s)</label><div class="row" style="gap:4px"><input type="number" class="in" min="0" step="0.5" value="${b.in||0}" style="width:72px" title="The clip starts here"><input type="number" class="out" min="0" step="0.5" value="${b.out||0}" style="width:72px" title="The clip stops here (0 = it runs on while the beat is spoken)"></div><div class="momt">${momTxt(b)}</div><label class="check" style="margin:3px 0 0"><input type="checkbox" class="snd" ${b.sound?'checked':''}> clip sound</label></div>
+     <div class="img ${m&&m.kind==='video'?'hide':''}"><label>Movement</label><select class="move">${sel([['auto','Auto'],['zoomin','Zoom in'],['zoomout','Zoom out'],['panleft','Pan left'],['panright','Pan right'],['still','Still']],b.move)}</select></div>
+     <div><label>Fit</label><select class="fit">${sel([['auto','Auto'],['fill','Fill (crop)'],['fit','Whole picture']],b.fit)}</select></div>
+     <div><label>Transition in</label><select class="tr">${sel([['','Default'],['flash','Flash'],['wipe','Wipe'],['glitch','Glitch'],['shutter','Shutter'],['stripes','Stripes'],['fade','Fade to black'],['scan','Scan line'],['none','None']],b.transition)}</select></div></div>
+    <div class="srcbox">${srcLine(m)}</div>
+    <div class="nwfind"><label>Picture search</label><input type="text" class="find" value="${esc(b.find||'')}" placeholder="what the picture should show, in English — e.g. Nvidia Jensen Huang"><button class="ghost fg" title="Search pictures for this beat (Bing / Wikipedia / Commons)">🔎 Find pictures</button></div>
+    <div class="nwpick hide"></div>
+    <div class="hold ${b.say?'hide':''}" style="margin-top:6px"><label>No narration: show for (s)</label><input type="number" class="nb-hold" min="0" max="60" step="0.5" value="${b.hold||0}" style="width:110px"></div>`;
+   const q=s=>d.querySelector(s);
+   const upd=()=>{b.find=q('.find').value;b.say=q('.say').value;b.title=q('.title').value;b.sub=q('.sub').value;b.tag=q('.nb-tag').value;b.in=+q('.in').value||0;b.out=+q('.out').value||0;b.sound=q('.snd').checked;b.move=q('.move').value;b.fit=q('.fit').value;b.transition=q('.tr').value;b.hold=+q('.nb-hold').value||0;q('.hold').classList.toggle('hide',!!b.say.trim());dirty()};
+   d.querySelectorAll('textarea,input,select').forEach(x=>x.addEventListener(x.tagName==='SELECT'||x.type==='checkbox'?'change':'input',upd));
+   for(const c of ['.in','.out'])q(c).addEventListener('change',()=>{const mm=P.media.find(x=>x.id===b.media);q('.momt').textContent=momTxt(b);if(mm)q('.mt').src=mThumb(mm,b)});
+   q('.media').addEventListener('change',()=>{b.media=q('.media').value;b.out=0;q('.out').value=0;q('.momt').textContent='';const mm=P.media.find(x=>x.id===b.media);q('.mt').src=mm?mThumb(mm,b):'';if(!mm)q('.mt').removeAttribute('src');q('.vid').classList.toggle('hide',!(mm&&mm.kind==='video'));q('.img').classList.toggle('hide',!!(mm&&mm.kind==='video'));q('.srcbox').innerHTML=srcLine(mm)});
+   q('.up').onclick=()=>{[beats[i-1],beats[i]]=[beats[i],beats[i-1]];drawBeats();dirty()};q('.dn').onclick=()=>{[beats[i+1],beats[i]]=[beats[i],beats[i+1]];drawBeats();dirty()};
+   q('.rm').onclick=async()=>{if(b.say&&!await uiConfirm('Delete this beat?'))return;beats.splice(i,1);drawBeats();dirty()};
+   q('.pv').onclick=async()=>{await flush();go('style');el('nwPvBeat').value=i;preview()};
+   const fq=q('.find');fq.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();q('.fg').click()}};
+   q('.fg').onclick=async()=>{const qq=fq.value.trim()||(b.title||'').trim();if(!qq){msg('Type what the picture should show (English words), e.g. Nvidia Jensen Huang',true);fq.focus();return}
+    const box=q('.nwpick');box.classList.remove('hide');box.innerHTML='<p class="muted">Searching pictures…</p>';q('.fg').disabled=true;
+    try{await flush();const j=await api(`/news/p/${P.id}/find`,{q:qq});box.replaceChildren();
+     if(!j.items.length){box.innerHTML='<p class="muted">No pictures found — try other words (names in English work best).</p>';return}
+     for(const it of j.items){const c=document.createElement('div');c.className='nwm';c.title=[it.title,it.site||it.source,it.page,it.license].filter(Boolean).join('\n');
+      c.innerHTML=`<img loading="lazy" referrerpolicy="no-referrer" src="${esc(it.thumb||it.url)}" alt=""><button class="btn add">Use</button><div class="n">${esc(it.title||it.source||'')}</div>${srcLine({source:{origin:'web',site:it.site||it.source,page:it.page||it.url,license:it.license}})}`;
+      c.querySelector('img').onerror=()=>c.remove();
+      c.querySelector('.add').onclick=async ev=>{ev.target.disabled=true;ev.target.textContent='Adding…';
+       try{await flush();P=await api(`/news/p/${P.id}/beat/${b.id}/pick`,{item:it,q:qq});drawBeats();msg(`Beat ${i+1}: picture added ✓`)}catch(e){msg(e.message,true);ev.target.disabled=false;ev.target.textContent='Use'}};
+      box.append(c)}
+     const x=document.createElement('button');x.className='ghost';x.textContent='✕ Close';x.style.alignSelf='center';x.onclick=()=>box.classList.add('hide');box.append(x)}
+    catch(e){box.innerHTML='';box.classList.add('hide');msg(e.message,true)}finally{q('.fg').disabled=false}};
+   box.append(d)});
+  if(!el('nwTags')){const dl=document.createElement('datalist');dl.id='nwTags';dl.innerHTML=TAGS.map(t=>`<option value="${t}">`).join('');document.body.append(dl)}
+  est()}
+ el('nwPics').onclick=async()=>{if(!P)return;if(!P.script.beats.length)return msg('Write the script first',true);await flush();
+  try{await api(`/news/p/${P.id}/pictures`,{});el('nwPics').disabled=true;el('nwPLog').classList.remove('hide');el('nwPLog').textContent='';watchJob()}catch(e){msg(e.message,true)}};
+ el('nwAddBeat').onclick=()=>{if(!P)return;const used=P.script.beats.map(b=>b.media);const free=P.media.find(m=>!used.includes(m.id))||P.media[0];
+  P.script.beats.push({id:Math.random().toString(16).slice(2,8),say:'',title:'',sub:'',tag:'',find:'',media:free?free.id:'',in:0,fit:'auto',move:'auto',sound:false,transition:'',hold:0});drawBeats();dirty();
+  const last=el('nwBeats').lastElementChild;if(last){last.scrollIntoView({block:'nearest'});last.querySelector('.say').focus()}};
+
+ /* ---------- step 5: style ---------- */
+ function themes(){if(!P)return;const box=el('nwThemes');box.replaceChildren();
+  for(const t of META.themes.filter(t=>thGroup==='all'||t.group===thGroup)){const d=document.createElement('div');d.className='nwth'+(t.id===P.style.theme?' on':'');d.title=t.name;
+   d.innerHTML=`<div class="pv" style="background:linear-gradient(180deg,#2a2a2a,#111)">${mini(t)}</div><b>${esc(t.name)}</b><small>${esc(t.design_name||'')}</small>`;
+   d.onclick=()=>{P.style.theme=t.id;P.style.hl='';el('nwHl').value=t.hl;if(!['file','none'].includes(el('nwMood').value))el('nwMood').value=t.mood;themes();dirty();preview()};box.append(d)}}
+ /* small drawing of each design (the shapes differ, not only the colours) */
+ function mini(t){const p=t.primary,a=t.accent,h=t.hl,hb=t.header_bg,tb=t.ticker_bg;const I=(st,c='')=>`<i${c?` class="${c}"`:''} style="${st}"></i>`;
+  const card=(x='border:2px solid '+p)=>I('left:6%;right:6%;top:27%;height:30%;background:#556;'+x);
+  const tick=(x='')=>I(`left:0;right:0;bottom:0;height:9%;background:${tb};border-top:2px solid ${p};${x}`)+I(`left:0;bottom:0;width:26%;height:9%;background:${p}`);
+  const cap=(x='border-radius:3px;border-left:3px solid '+p)=>I('left:12%;right:12%;top:75%;height:9%;background:rgba(0,0,0,.6);'+x);
+  switch(t.design){
+  case 'sport':return I(`left:0;top:2%;width:52%;height:9%;background:${hb}`,'sk')+I(`left:46%;top:2%;width:16%;height:9%;background:${p}`,'sk')+I(`left:65%;top:2%;width:3%;height:9%;background:${h}`,'sk')+I(`left:70%;top:2%;width:3%;height:9%;background:${h}`,'sk')
+   +card('border:1px solid '+h)+I(`left:6%;top:27%;width:0;height:0;border-top:14px solid ${p};border-right:14px solid transparent`)+I(`left:6%;top:61%;width:10%;height:9%;background:${p}`,'sk')+I(`left:17%;top:61%;width:50%;height:9%;background:${a}`,'sk')+cap('transform:skewX(-14deg);border-left:3px solid '+h)+tick();
+  case 'cinema':return I('left:0;right:0;top:0;height:12%;background:#000')+I(`left:30%;right:30%;top:5%;height:2px;background:${p}`)+I(`left:8%;top:16%;width:30%;height:7%;background:${p};border-radius:2px`)+I(`left:8%;top:13%;width:30%;height:3%;background:repeating-linear-gradient(60deg,#eee 0 3px,#111 3px 6px)`)
+   +card('border-top:1px solid '+p+';border-bottom:1px solid '+p)+I('left:0;right:0;top:60%;height:12%;background:rgba(0,0,0,.65)')+I(`left:25%;right:25%;top:61%;height:1px;background:${p}`)+I(`left:25%;right:25%;top:71%;height:1px;background:${p}`)+I('left:0;right:0;bottom:0;height:11%;background:#000')+I(`left:6%;bottom:3%;width:22%;height:5%;border:1px solid ${p}`);
+  case 'hud':case 'circuit':{const br=`width:9px;height:9px;border-color:${p};border-style:solid;`;return I(`left:0;right:0;top:11%;height:1px;background:${p}`)+I(`left:5%;top:2%;width:8%;height:6%;border-radius:${t.design==='hud'?'50%':'3px'};border:1px solid ${p}`)
+   +I(`left:6%;top:16%;width:30%;height:7%;border:1px solid ${p}`)+I(br+'left:4%;top:25%;border-width:2px 0 0 2px')+I(br+'right:4%;top:25%;border-width:2px 2px 0 0')+I(br+'left:4%;top:55%;border-width:0 0 2px 2px')+I(br+'right:4%;top:55%;border-width:0 2px 2px 0')
+   +I('left:6%;right:6%;top:27%;height:30%;background:#556')+I(`left:6%;right:6%;top:40%;height:1px;background:${h}`)+I(`left:6%;top:61%;width:58%;height:9%;background:rgba(0,0,0,.5);border:1px solid ${p}${t.design==='circuit'?';border-radius:3px':''}`)+cap('border:1px solid '+p)+I(`left:0;right:0;bottom:0;height:8%;background:rgba(0,0,0,.5);border-top:1px solid ${p}`)+I(`left:4%;bottom:2%;width:20%;height:4%;border:1px solid ${p}`);}
+  case 'casefile':return I(`left:0;right:0;top:0;height:12%;background:${hb};border-bottom:2px solid ${p}`)+I('left:0;top:0;width:45%;height:12%;background:#D9C7A0;clip-path:polygon(0 0,85% 0,100% 100%,0 100%)')+I(`left:8%;top:15%;width:30%;height:7%;border:2px solid ${p};transform:rotate(-7deg)`)
+   +card('border:4px solid #EFE6D2')+I('left:2%;top:25%;width:14%;height:3%;background:rgba(243,227,160,.7);transform:rotate(-35deg)')+I('left:6%;top:61%;width:58%;height:9%;background:#EFE6D2;transform:rotate(1deg)')+cap()+I('left:0;right:0;bottom:0;height:9%;background:'+tb)+I('left:0;bottom:0;width:30%;height:9%;background:repeating-linear-gradient(45deg,#FFD400 0 5px,#111 5px 10px)');
+  case 'pop':return I(`left:3%;top:2%;width:55%;height:9%;background:${p};border-radius:20px;box-shadow:3px 3px 0 #000`)+I(`right:5%;top:3%;width:22%;height:6%;background:${h};border-radius:4px;transform:rotate(4deg)`)+I(`left:6%;top:14%;width:28%;height:9%;background:${h};clip-path:polygon(50% 0,61% 30%,95% 20%,72% 50%,95% 80%,61% 70%,50% 100%,39% 70%,5% 80%,28% 50%,5% 20%,39% 30%)`)
+   +card('border:3px solid #fff;border-radius:8px;box-shadow:4px 4px 0 rgba(0,0,0,.6)')+I(`left:6%;top:61%;width:56%;height:9%;background:${a};border-radius:9px;transform:rotate(-2deg);box-shadow:3px 3px 0 rgba(0,0,0,.6)`)+I(`left:14%;top:72%;width:30%;height:5%;background:${h};border-radius:9px`)+cap('border-radius:12px')+I(`left:4%;right:4%;bottom:1%;height:7%;background:${tb};border-radius:9px`)+I(`left:4%;bottom:1%;width:24%;height:7%;background:${p};border-radius:9px`);
+  case 'heritage':return I(`left:0;right:0;top:0;height:12%;background:${hb};border-bottom:3px double ${p};border-top:2px solid ${p}`)+I(`left:7%;top:16%;width:30%;height:7%;background:${p};border-radius:9px`)
+   +card('outline:2px solid '+p+';outline-offset:3px;border:1px solid '+p)+I(`left:4%;top:24%;width:7px;height:7px;background:${h}`,'dm')+I(`right:4%;top:24%;width:7px;height:7px;background:${h}`,'dm')+I(`left:6%;top:61%;width:58%;height:9%;background:${a};border-top:2px solid ${p};border-bottom:2px solid ${p}`)+cap('border-radius:4px;border:1px solid '+p)+tick('border-top:3px double '+p);
+  case 'editorial':return I(`left:0;right:0;top:0;height:12%;background:${hb};border-bottom:3px double #111`)+I('left:30%;right:30%;top:4%;height:4%;background:#222')+I(`left:7%;top:16%;width:20%;height:6%;border-bottom:2px solid ${h}`)
+   +card('border:4px solid #EFE6D2;outline:1px solid #111')+I('left:6%;top:61%;width:60%;height:12%;background:#EFE6D2;border-top:3px solid #111')+I('left:10%;top:66%;width:45%;height:2px;background:#444')+cap('border-top:2px solid '+p)+I(`left:0;right:0;bottom:0;height:9%;background:${tb};border-top:2px solid #111`)+I('left:0;bottom:0;width:22%;height:9%;background:#111');
+  case 'finance':return I(`left:0;right:0;top:0;height:12%;background:${hb};border-bottom:2px solid ${p}`)+I(`right:6%;top:4%;width:3%;height:4%;background:${h}`)+I(`right:10%;top:6%;width:3%;height:2%;background:${h}`)+I(`right:14%;top:5%;width:3%;height:3%;background:${h}`)+I('left:0;right:0;top:12%;height:1.5%;background:linear-gradient(90deg,#16C172 0 40%,#E5484D 40% 55%,#16C172 55% 80%,#E5484D 80%)')
+   +I(`left:7%;top:17%;width:28%;height:7%;background:${p};border-radius:3px`)+card('border:2px solid '+p)+I(`left:50%;right:7%;top:42%;height:14%;background:${h};opacity:.5;clip-path:polygon(0 100%,0 80%,30% 60%,55% 70%,100% 0,100% 100%)`)+I(`left:6%;top:61%;width:60%;height:9%;background:${a}`)+I(`left:6%;top:61%;width:9%;height:9%;background:${h}`)+cap()+tick();
+  case 'arcade':return I(`left:0;right:0;top:0;height:12%;background:${hb};border-bottom:4px dotted ${hb}`)+I(`right:5%;top:6%;width:22%;height:3%;background:${p}`)+I(`left:7%;top:17%;width:26%;height:7%;background:${p};box-shadow:3px 3px 0 #000`)
+   +card('border:4px solid '+p+';box-shadow:4px 4px 0 rgba(0,0,0,.5)')+I('left:6%;top:61%;width:60%;height:12%;background:rgba(0,0,0,.8);border:3px solid #fff')+I(`left:57%;top:68%;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid #fff`)+cap('border-top:3px solid '+p)+tick('border-top:4px dotted '+tb);
+  case 'motor':return I(`left:0;right:0;top:0;height:12%;background:${hb}`)+I(`left:55%;top:3%;width:3%;height:6%;background:${p}`,'sk')+I(`left:60%;top:3%;width:3%;height:6%;background:${p}`,'sk')+I(`left:65%;top:3%;width:3%;height:6%;background:${p}`,'sk')+I('left:0;right:0;top:12%;height:3%;background:repeating-conic-gradient(#111 0 25%,#eee 0 50%) 0 0/8px 8px')
+   +I(`left:7%;top:18%;width:24%;height:6%;background:${p}`,'sk')+card('border:2px solid '+h)+I(`left:6%;top:61%;width:58%;height:9%;background:${a};border-left:6px solid ${p}`,'sk')+I(`left:0;top:63%;width:5%;height:2px;background:${h}`)+I(`left:0;top:67%;width:4%;height:2px;background:${h}`)+cap('transform:skewX(-14deg);border-left:3px solid '+h)+tick('border-top:3px solid #eee');
+  default:return I(`left:0;right:0;top:0;height:12%;background:${hb};border-bottom:2px solid ${p}`)+I(`left:8%;top:16%;width:34%;height:7%;border-radius:2px;background:${p}`)+card()+I(`left:6%;top:61%;width:60%;height:9%;background:${a};border-left:4px solid ${h}`)+cap()+tick()}}
+ function pvBeats(){if(!P)return;const s=el('nwPvBeat'),v=s.value;s.replaceChildren();P.script.beats.forEach((b,i)=>{const o=document.createElement('option');o.value=i;o.textContent=`Beat ${i+1}: ${(b.title||b.say||'').slice(0,40)}`;s.append(o)});
+  if(P.style.outro){const o=document.createElement('option');o.value=P.script.beats.length;o.textContent=(P.style.platform||'youtube')==='youtube'?'Ending (Subscribe)':'Ending (Follow)';s.append(o)}
+  if(P.style.credits){const o=document.createElement('option');o.value='credits';o.textContent='📜 End credits page';s.append(o)}
+  if(v!==''&&[...s.options].some(o=>o.value===v))s.value=v}
+ let pvSeq=0;
+ async function preview(){if(!P)return;if(!P.script.beats.length){el('nwPvMsg').textContent='Write the script first (Story step) — then the preview shows your text.';return}
+  const my=++pvSeq;await flush();el('nwPvMsg').textContent='Drawing the preview…';el('nwPv').disabled=true;
+  try{const pv=el('nwPvBeat').value;const j=await api(`/news/p/${P.id}/frame`,{beat:pv==='credits'?'credits':(+pv||0)});if(my!==pvSeq)return;const im=el('nwFrame');im.src=j.url;im.classList.remove('hide');el('nwPvMsg').textContent='This is one picture from the video (voice timing is estimated until the video is made).'}
+  catch(e){if(my===pvSeq)el('nwPvMsg').textContent=e.message}finally{el('nwPv').disabled=false}}
+ el('nwPv').onclick=preview;el('nwPvBeat').onchange=preview;
+ el('nwVTest').onclick=async()=>{if(!P)return;const b=P.script.beats.find(b=>b.say);const text=(b?b.say:'').slice(0,300)||((window.OL&&!['my','en'].includes(langSel)&&OL.sample(langSel))||(langSel==='en'?'Breaking news from around the world.':'မင်္ဂလာပါ။ ဒီနေ့ သတင်းထူးတွေကို တင်ပြပေးသွားပါမယ်။'));
+  el('nwVTest').disabled=true;try{const sp=await api('/news/spoken',{text,lang:langSel});const j=await api('/tts_test',{text:sp.text||text,voice:el('nwVoice').value,rate:+el('nwRate').value,speak:langSel});const a=el('nwVAud');a.src=j.url;a.classList.remove('hide');a.play().catch(()=>{})}catch(e){msg(e.message,true)}finally{el('nwVTest').disabled=false}};
+ el('nwLogoF').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f||!P)return;try{await flush();P=await upload(`/news/p/${P.id}/logo`,[f]);logoState();msg('Logo added — it is remembered for your next videos');preview()}catch(err){msg(err.message,true)}};
+ el('nwLogoDel').onclick=async()=>{if(!P)return;try{await flush();P=await api(`/news/p/${P.id}/logo`,undefined,'DELETE');logoState();preview()}catch(e){msg(e.message,true)}};
+ el('nwMusicF').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f||!P)return;el('nwMusicN').textContent='Uploading…';try{await flush();P=await upload(`/news/p/${P.id}/music`,[f]);el('nwMood').value='file';el('nwMusicN').textContent='music file added ✓'}catch(err){el('nwMusicN').textContent=err.message}};
+
+ /* ---------- step 6: render ---------- */
+ function drawRender(){if(!P)return;est();const has=P.has_video;el('nwDone').classList.toggle('hide',!has);
+  loadCredits();
+  if(has){const src=`/news/p/${P.id}/video?v=${Math.round((P.updated||0)*1000)}`;if(!el('nwVid').src.endsWith(src))el('nwVid').src=src;el('nwDlA').href=`/news/p/${P.id}/video?dl=1`}}
+ el('nwGo').onclick=async()=>{if(!P)return;await flush();el('nwRLog').textContent='';el('nwRBar').style.width='0%';el('nwDone').classList.add('hide');el('nwVid').pause();
+  try{await api(`/news/p/${P.id}/render`,{});el('nwGo').disabled=true;watchJob()}catch(e){msg(e.message,true)}};
+ el('nwStop').onclick=async()=>{if(P)await api(`/news/p/${P.id}/cancel`,{})};
+ el('nwSave').onclick=async()=>{if(!P)return;if(window.pywebview?.api?.save_news){const r=await pywebview.api.save_news(P.id);el('nwSaved').textContent=r?'Saved: '+r:''}else{el('nwDlA').click()}};
+ el('nwDlA').addEventListener('click',e=>{if(window.pywebview?.api?.save_news){e.preventDefault();el('nwSave').click()}});
+
+ /* ---------- my presets ---------- */
+ let PRE={items:[],default:null};
+ const preMsg=(t,bad)=>{const m=el('nwPreMsg');m.textContent=t;m.className='nwsmall'+(bad?' err':'')};
+ async function loadPresets(){try{PRE=await api('/news/presets')}catch(e){preMsg(e.message,true)}drawPresets()}
+ function drawPresets(want){const s=el('nwPreSel'),keep=want||s.value;s.replaceChildren();
+  if(!PRE.items.length){const o=document.createElement('option');o.value='';o.textContent='No presets yet — choose a style, then Save as preset';s.append(o)}
+  for(const it of PRE.items){const o=document.createElement('option');o.value=it.id;
+   o.textContent=(it.id===PRE.default?'★ ':'')+it.name+' · '+themeOf(it.style.theme).name+(it.style.mood==='file'?(it.has_music?' · own music':''):'');s.append(o)}
+  const ids=PRE.items.map(x=>x.id);s.value=ids.includes(keep)?keep:(P&&ids.includes(P.preset)?P.preset:(ids[0]||''));preState()}
+ function preState(){const id=el('nwPreSel').value,it=PRE.items.find(x=>x.id===id);
+  for(const b of ['nwPreApply','nwPreDel','nwPreDef'])el(b).disabled=!it;el('nwPreDef').checked=!!it&&PRE.default===id;
+  if(it&&!el('nwPreName').dataset.typed)el('nwPreName').value=it.name}
+ el('nwPreSel').onchange=()=>{el('nwPreName').dataset.typed='';preState()};
+ el('nwPreName').oninput=()=>{el('nwPreName').dataset.typed=el('nwPreName').value?'1':''};
+ el('nwPreSave').onclick=async()=>{if(!P)return;const name=el('nwPreName').value.trim();if(!name){preMsg('Type a name for the preset first',true);el('nwPreName').focus();return}
+  const same=PRE.items.find(x=>x.name.toLowerCase()===name.toLowerCase());if(same&&!await uiConfirm(`Replace the preset "${same.name}" with this style?`))return;
+  await flush();try{PRE=await api('/news/presets',{pid:P.id,name});P.preset=PRE.saved;el('nwPreName').dataset.typed='';drawPresets(PRE.saved);
+   preMsg(`✓ Saved "${name}". Use it in any news video with Use preset${P.style.mood==='file'&&P.has_music?' (your music file is saved with it)':''}.`)}catch(e){preMsg(e.message,true)}};
+ el('nwPreApply').onclick=async()=>{const id=el('nwPreSel').value;if(!P||!id)return;await flush();
+  try{P=await api(`/news/presets/${id}/apply`,{pid:P.id});fill();themes();const it=PRE.items.find(x=>x.id===id);preMsg(`✓ Using "${it?it.name:'preset'}" — the template, colour, transition and music are set.`);
+   if(el('nwFrame')&&!el('nwFrame').classList.contains('hide'))preview()}catch(e){preMsg(e.message,true)}};
+ el('nwPreDel').onclick=async()=>{const id=el('nwPreSel').value,it=PRE.items.find(x=>x.id===id);if(!it||!await uiConfirm(`Delete the preset "${it.name}"? Videos already made are not changed.`))return;
+  try{PRE=await api('/news/presets/'+id,undefined,'DELETE');el('nwPreName').value='';el('nwPreName').dataset.typed='';drawPresets();preMsg('Preset deleted')}catch(e){preMsg(e.message,true)}};
+ el('nwPreDef').onchange=async()=>{const id=el('nwPreSel').value;if(!id)return;
+  try{PRE=await api('/news/presets/default',{id:el('nwPreDef').checked?id:''});drawPresets(id);preMsg(PRE.default?'✓ New news videos will start with this preset':'New news videos start with the template of their news type again')}catch(e){preMsg(e.message,true)}};
+})();

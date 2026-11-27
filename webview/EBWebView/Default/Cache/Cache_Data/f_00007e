@@ -1,0 +1,1490 @@
+<!doctype html><html lang="my"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><script>/* v101: opening a feature from the sidebar never flashes Home first */if(/[?&]f=/.test(location.search))document.documentElement.classList.add("boot-f");
+/* v102: nothing is shown until the sidebar is ready, so switching never flashes another layout */document.documentElement.classList.add("boot");setTimeout(function(){document.documentElement.classList.remove("boot")},2500)</script><style>.boot-f #homePick{display:none!important}html.boot body>*{visibility:hidden}.mrstat{padding:10px 12px;border:1px solid var(--line2);border-radius:7px;margin:4px 0 10px}</style>
+<title>Recap Studio — Burmese movie recaps</title>
+<style>
+@font-face{font-family:"MR Noto";src:url(/font/noto)}
+@font-face{font-family:"MR Padauk";src:url(/font/padauk)}
+@font-face{font-family:"MR PadaukB";src:url(/font/padaukb)}
+@font-face{font-family:"MR Serif";src:url(/font/serif)}
+:root{--bg:#1b1b1b;--panel:#232323;--panel2:#2b2b2b;--hd:#1f1f1f;--line:#121212;--line2:#3a3a3a;--fg:#d4d4d4;--mute:#8a8a8a;--acc:#2d8ceb;--acc-hi:#4a9ff0;--acc-soft:rgba(45,140,235,.16);--ok:#5fb26a;--bad:#e0574f;--warn:#e3b341;--r:2px}
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--fg);font:12px/1.5 "Segoe UI","MR Noto",system-ui,sans-serif}
+.wrap{display:grid;grid-template-rows:30px 1fr 5px 210px 22px;height:100vh}
+header{display:flex;align-items:center;gap:14px;padding:0 10px;background:var(--hd);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:8px}.logo{display:none}.brand h1{margin:0;font-size:12px;font-weight:600;color:#e8e8e8}.brand p{display:none}
+.menu{display:flex;gap:2px;color:var(--mute)}.menu span{padding:2px 8px}
+.steps{display:flex;margin-left:auto;font-size:11px;color:var(--mute)}
+.steps span{padding:0 10px;border-left:1px solid var(--line2);white-space:nowrap}.steps span:first-child{border:0}
+.steps span.on{color:#fff}.steps span.ok{color:var(--ok)}
+main{position:relative;min-height:0;overflow:hidden}
+.grid2{display:grid;grid-template-columns:1fr 380px;height:100%;min-height:0}
+.panel{background:var(--panel);padding:10px 12px;border-left:1px solid var(--line);overflow:auto;min-height:0}
+.panel h2{margin:-10px -12px 10px;padding:5px 12px;font-size:11px;font-weight:600;color:#bdbdbd;background:var(--hd);border-bottom:1px solid var(--line);display:flex;gap:8px}
+.panel h2 small{color:var(--mute);font-weight:400}
+.viewer{background:#0f0f0f;display:flex;flex-direction:column;min-height:0;overflow:auto;padding:10px}
+.vhead{font-size:11px;color:var(--mute);padding:0 2px 6px;display:flex;justify-content:space-between}
+.hide{display:none!important}
+button{font:inherit;cursor:pointer;border:0;border-radius:var(--r)}
+.btn{background:var(--acc);color:#fff;font-weight:600;padding:6px 14px}.btn:hover{background:var(--acc-hi)}
+.btn:disabled,.btn:disabled:hover{background:#3a3a3a;color:#777;cursor:not-allowed}.btn.big{width:100%;padding:8px;margin-top:10px}
+.ghost{background:#333;color:var(--fg);border:1px solid #3f3f3f;padding:4px 10px;font-size:12px}.ghost:hover{background:#3b3b3b}
+.drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex:1;min-height:260px;border:1px dashed #444;text-align:center;cursor:pointer;color:var(--mute)}
+.drop:hover,.drop.over{border-color:var(--acc);color:var(--fg)}.drop b{color:var(--fg);font-weight:600}
+.drop input{display:none}
+.drop.picked{flex:0 0 auto;min-height:0;padding:10px;border-style:solid}
+#upStage{flex:1;min-height:0}#upVid{height:100%;max-height:100%;object-fit:contain}.muted{color:var(--mute);font-size:11px}
+label.l{display:block;font-size:11px;color:var(--mute);margin:0 0 4px}
+.field{margin-bottom:12px}
+select,input[type=number],input[type=text],textarea{width:100%;background:#181818;color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:5px 7px;font:inherit}
+select:focus,textarea:focus,input:focus{outline:none;border-color:var(--acc)}
+textarea{line-height:1.8;resize:vertical;font-family:"MR Noto",sans-serif}
+input[type=range]{width:100%;accent-color:var(--acc);height:16px}
+.row{display:flex;gap:6px;align-items:center}.row>*{flex:1}
+.seg-btns{display:flex;border:1px solid var(--line2)}
+.seg-btns button{flex:1;background:var(--field);color:var(--mute);padding:4px;border-radius:0;font-size:12px}
+.seg-btns button+button{border-left:1px solid #3a3a3a}.seg-btns button.on{background:#3a3a3a;color:#fff}
+.voices{display:flex;flex-direction:column;border:1px solid #333}
+.vc{padding:5px 8px;cursor:pointer;background:#1e1e1e;border-bottom:1px solid #2c2c2c;display:flex;gap:8px;align-items:baseline}
+.vc:hover{background:var(--field)}.vc.on{background:var(--acc-soft);box-shadow:inset 2px 0 var(--acc)}
+.vc b{font-size:12px;font-weight:600;min-width:90px}.vc small{font-size:11px;color:var(--mute)}
+.badge{display:inline-block;font-size:10px;padding:0 4px;margin-left:4px;border:1px solid var(--line2);color:var(--mute)}
+.badge.n{color:var(--ok);border-color:#3d5c41}.badge.m{color:var(--mute)}
+.sl{display:grid;grid-template-columns:52px 1fr 44px;gap:8px;align-items:center;margin-bottom:3px;font-size:11px;color:var(--mute)}
+.sl output{text-align:right;color:var(--fg);font-variant-numeric:tabular-nums;background:#181818;border:1px solid #333;padding:0 4px}
+.tabs{display:flex;margin:-10px -12px 12px;background:var(--hd);border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{background:transparent;color:var(--mute);padding:6px 12px;border-radius:0;border-right:1px solid var(--line);white-space:nowrap;font-size:11.5px}
+.tabs button.on{color:#fff;background:var(--panel);box-shadow:inset 0 2px var(--acc)}
+.fonts{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.fc{border:1px solid #333;padding:4px;cursor:pointer;background:#1e1e1e;text-align:center}
+.fc.on{border-color:var(--acc)}.fc span{display:block;font-size:16px;line-height:1.7}.fc small{color:var(--mute);font-size:10px}
+.check{display:flex;align-items:center;gap:7px;padding:3px 0;margin-bottom:8px;cursor:pointer;font-size:12px}
+.check input{accent-color:var(--acc);width:13px;height:13px;margin:0}
+.ratios{display:grid;grid-template-columns:repeat(6,1fr);border:1px solid var(--line2)}
+.ratios button{background:var(--field);color:var(--mute);padding:5px 2px;font-size:10.5px;border-radius:0;display:flex;flex-direction:column;align-items:center;gap:3px}
+.ratios button+button{border-left:1px solid #3a3a3a}
+.rs{display:block;border:1px solid currentColor}
+.ratios button.on{background:#3a3a3a;color:#fff}
+.rpwrap{display:flex;justify-content:center;align-items:center;background:var(--field);padding:8px;min-height:200px;border:1px solid #333}
+#rp{max-width:100%;max-height:300px}
+.stagewrap{min-height:0}
+.stage{position:relative;line-height:0;overflow:hidden;background:#000}
+.stage video{width:100%;max-height:calc(100vh - 330px);display:block;background:#000}
+.ov{position:absolute;cursor:move;touch-action:none;line-height:1.45;user-select:none}
+#subBox{border:1px dashed var(--acc);display:flex;align-items:flex-end;justify-content:center;text-align:center;overflow:hidden;padding:0 2px}
+#subBox .txt{color:#fff;paint-order:stroke;width:100%;word-break:keep-all;overflow-wrap:anywhere}
+#blurBox,.bbox{border:1px dashed var(--warn);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);background:rgba(227,179,65,.08)}
+.hd{position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;cursor:nwse-resize}
+#subBox .hd{background:var(--acc)}#blurBox .hd,.bbox .hd{background:var(--warn)}
+#cropBox{border:2px solid var(--acc);background:var(--acc-soft)}#cropBox .tag{background:var(--acc)}
+.crop-handle{position:absolute;width:16px;height:16px;background:var(--acc);border:2px solid var(--fg)}
+.crop-handle[data-edge="nw"]{left:0;top:0;cursor:nwse-resize}.crop-handle[data-edge="ne"]{right:0;top:0;cursor:nesw-resize}
+.crop-handle[data-edge="sw"]{left:0;bottom:0;cursor:nesw-resize}.crop-handle[data-edge="se"]{right:0;bottom:0;cursor:nwse-resize}
+.crop-handle[data-edge="n"]{left:calc(50% - 8px);top:0;cursor:ns-resize}.crop-handle[data-edge="s"]{left:calc(50% - 8px);bottom:0;cursor:ns-resize}
+.crop-handle[data-edge="w"]{left:0;top:calc(50% - 8px);cursor:ew-resize}.crop-handle[data-edge="e"]{right:0;top:calc(50% - 8px);cursor:ew-resize}
+.tag{position:absolute;top:0;left:0;font-size:10px;line-height:1.6;padding:0 4px;color:#fff;white-space:nowrap;pointer-events:none}
+#subBox .tag{background:var(--acc)}#blurBox .tag,.bbox .tag{background:var(--warn);color:#111}
+.split5{background:var(--hd);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+#progCard{display:grid!important;grid-template-rows:26px 1fr;background:var(--panel);min-height:0}
+.dockbar{display:flex;align-items:center;gap:10px;padding:0 10px;background:var(--hd);border-bottom:1px solid var(--line);font-size:11px}
+.dockbar .t{color:#bdbdbd;font-weight:600;padding-right:10px;border-right:1px solid var(--line2)}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.dockbar #stepTxt{flex:1;font-weight:400;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{width:260px;height:8px;background:#141414;border:1px solid var(--line2);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .4s}
+#pct{font-variant-numeric:tabular-nums;width:38px;text-align:right}
+.log{font:11.5px/1.55 Consolas,ui-monospace,"MR Noto",monospace;color:#a8a8a8;overflow:auto;white-space:pre-wrap;background:#141414;padding:6px 10px;margin:0;min-height:0;height:100%}
+#err{margin:0;padding:0 10px}#err:empty{display:none}
+.err{color:var(--bad)}.ok{color:var(--ok)}.warn{color:var(--warn)}
+footer{display:flex;align-items:center;gap:16px;padding:0 10px;background:#007acc0;background:var(--hd);border-top:1px solid var(--line);font-size:10.5px;color:var(--mute)}
+.segs{margin:0 -12px}
+.seg{display:grid;grid-template-columns:64px 1fr;gap:8px;padding:6px 12px;border-top:1px solid #2e2e2e}
+.seg:nth-child(odd){background:var(--field)}
+.seg .t{font-size:10.5px;color:var(--mute);font-family:Consolas,monospace;padding-top:2px}
+.seg .t button{margin-top:4px;font-size:10.5px;padding:1px 6px;display:block}
+.seg .en{color:var(--mute);font-size:11.5px;margin-bottom:3px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.bl{border:1px solid #333;padding:6px 8px;margin-bottom:4px;background:#1e1e1e;cursor:pointer}
+.bl.on{border-color:var(--warn)}
+#doneCard{position:absolute;inset:0;z-index:30;background:#0f0f0f;border:0;display:flex;flex-direction:column;padding:0;overflow-y:auto}
+#doneCard h2{margin:0}#doneCard .stage{flex:0 0 auto;min-height:260px;display:flex;align-items:center;justify-content:center}
+#doneCard>*{flex-shrink:0}#doneCard .pk{margin:14px 16px 24px}
+#doneCard .stage video{height:48vh;min-height:240px;width:auto;max-width:100%}
+#doneCard .row{padding:8px 12px;background:var(--panel);border-top:1px solid var(--line)}
+.bl .hdr{display:flex;align-items:center;gap:8px;font-size:12.5px;margin-bottom:6px}.bl .hdr b{flex:1}
+.bl .tm{display:grid;grid-template-columns:auto 1fr auto;gap:6px;align-items:center;margin-bottom:5px;font-size:11.5px;color:var(--mute)}
+.bl .tm input{padding:4px 7px;font-variant-numeric:tabular-nums}.bl .tm button,.bl .hdr button{padding:3px 8px;font-size:11px}
+.bl .alw{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--mute);margin-bottom:4px}
+.ovb{pointer-events:auto;border:1px dashed var(--warn);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);background:rgba(217,163,57,.10)}
+.ovb.off{opacity:.3;backdrop-filter:none;-webkit-backdrop-filter:none}.ovb.sel{border-style:solid;box-shadow:0 0 0 1px var(--warn)}
+.ovb .hd{background:var(--warn)}.ovb .tag{background:var(--warn);color:#101114}
+.mv{border:1px solid #333;padding:8px;margin:0 0 12px;background:#1e1e1e}
+.rec{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bad);margin-right:6px;animation:bl 1s infinite}@keyframes bl{50%{opacity:.2}}
+header .hdrbtns{margin-left:auto;display:flex;gap:6px}header .hdrbtns button{padding:4px 10px;font-size:12px}
+#langSel{width:100%;padding:6px 8px;background:var(--field);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);font:inherit}
+.modal{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center}.modal.hide{display:none}
+.mbox{width:min(640px,92vw);max-height:80vh;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.storlist{overflow:auto;flex:1;border:1px solid var(--line)}.storlist label{display:flex;gap:10px;align-items:center;padding:6px 10px;border-bottom:1px solid #2a2a2a;font-size:12.5px;cursor:pointer;flex:1;min-width:0}
+.storlist label.dis{opacity:.45;cursor:not-allowed}.storlist .sz{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--mute)}
+.jrow{display:flex;align-items:center;border-bottom:1px solid #2a2a2a}.jrow label{border-bottom:0}.jacts{display:flex;gap:4px;padding:0 8px 0 0;flex:0 0 auto}.jacts button{font-size:12px;padding:3px 8px}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#424242;border:2px solid #232323}::-webkit-scrollbar-track{background:transparent}
+#homePick{position:absolute;inset:0;z-index:40;background:radial-gradient(1200px 600px at 50% -10%,#1f2a38 0,#141414 60%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;overflow:auto}
+#homePick h2{margin:0 0 4px;font-size:22px;color:#f0f0f0;font-weight:600}#homePick>p{margin:0 0 22px;color:var(--mute);font-size:13px}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;width:min(1080px,100%)}
+.fcard{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;background:#1f1f1f;border:1px solid #333;border-radius:10px;padding:18px 16px;color:var(--fg);transition:transform .15s,border-color .15s,background .15s}
+.fcard:hover{transform:translateY(-3px);border-color:var(--acc);background:#232a33}.fcard .ic{font-size:30px;line-height:1}.fcard b{font-size:15px;color:#fff}.fcard span{font-size:12px;color:var(--mute);line-height:1.45}
+#featTag{font-size:11px;color:var(--acc-hi);margin-left:6px}
+#langPick{position:absolute;inset:0;z-index:41;background:radial-gradient(1200px 600px at 50% -10%,#1f2a38 0,#141414 60%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;overflow:auto}
+#langPick.hide{display:none}#langPick h2{margin:0 0 4px;font-size:22px;color:#f0f0f0;font-weight:600}#langPick>p{margin:0 0 18px;color:var(--mute);font-size:13px}
+.lpbox{width:min(860px,100%);display:grid;grid-template-columns:1fr 1fr;gap:16px}.lpcol{background:#1b1b1b;border:1px solid #333;border-radius:10px;padding:14px}
+.lpcol h3{margin:0 0 4px;font-size:14px;color:#fff}.lpcol .muted{display:block;margin-bottom:10px}
+.lpgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:6px;max-height:46vh;overflow:auto}
+.lpgrid button{background:#242424;border:1px solid #383838;color:var(--fg);border-radius:7px;padding:7px 8px;text-align:left;line-height:1.25}
+.lpgrid button b{display:block;font-size:13px;color:#fff;font-weight:600}.lpgrid button small{color:var(--mute);font-size:11px}
+.lpgrid button:hover{border-color:var(--acc)}.lpgrid button.on{border-color:var(--acc);background:var(--acc-soft)}
+.lpgrid button.none{grid-column:1/-1}.lpfoot{display:flex;gap:10px;align-items:center;margin-top:16px;width:min(860px,100%)}
+.lpchip{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 10px;border:1px solid var(--line2);border-radius:7px;margin:0 0 10px;background:#1d1d1d}
+.lpchip b{color:#fff}@media(max-width:760px){.lpbox{grid-template-columns:1fr}}
+.utab{width:100%;border-collapse:collapse;font-size:12px}.utab th,.utab td{border-bottom:1px solid #2c2c2c;padding:6px 8px;text-align:left;vertical-align:top}
+.utab th{color:var(--mute);font-weight:600;position:sticky;top:0;background:#1b1b1b}.utab td.n{text-align:right;font-variant-numeric:tabular-nums}.utab tr.tot td{font-weight:600;color:#fff;border-top:1px solid #444}
+.utab small{color:var(--mute)}.urange{display:flex;gap:6px;margin-bottom:8px}
+</style><link rel="stylesheet" href="/studio-assets/studio.css"><script src="/studio-assets/dialog.js"></script></head><body><div class="wrap">
+<header>
+ <div class="brand"><h1>Recap Studio</h1><span id="featTag"></span></div>
+ <div class="steps" id="steps"><span data-s="0" class="on">Import</span><span data-s="1">Transcribe</span><span data-s="2">Edit</span><span data-s="3">Render</span><span data-s="4">Export</span></div>
+ <div class="hdrbtns"><button class="ghost" id="horrorBtn" title="Horror stories: your script or Gemini's, a horror narrator, horror music and your pictures">👻 Horror</button><button class="ghost" id="newsBtn" title="Make news videos: sports, strange, movies, world, Myanmar…">📰 News</button><button class="ghost" id="refBtn" title="Search and watch reference videos inside the app">▶ References</button><button class="ghost" id="dlBtn" title="Download a video from a link">↓ Download</button><button class="ghost" id="homeBtn" title="Start over">⌂ New</button><button class="ghost" id="storBtn" title="Clear job folders">🗂 Storage</button><button class="ghost" id="keyBtn" title="Enter Gemini API key">🔑 API Key</button></div>
+</header>
+<main>
+<div id="homePick"><h2>What do you want to make?</h2><p>Choose a feature to start</p>
+ <div class="fgrid">
+  <button class="fcard" data-f="news"><span class="ic">📰</span><b>News</b><span>News videos: sports, strange, movies, world, Myanmar…</span></button>
+  <button class="fcard" data-f="horror"><span class="ic">👻</span><b>Horror Stories</b><span>Your script or AI's, a horror narrator, horror music and your pictures.</span></button>
+  <button class="fcard" data-f="recap"><span class="ic">🎬</span><b>Recap → Recap</b><span>AI voiceover and subtitles in your language over an existing recap video.</span></button>
+  <button class="fcard" data-f="short"><span class="ic">📱</span><b>Long → Short</b><span>Turn a long video into a short story video with narration.</span></button>
+  <button class="fcard" data-f="movie"><span class="ic">🎞</span><b>Original → Recap</b><span>A whole film retold like a YouTube recap: gripping 15 s hook, non-stop storyteller narration.</span></button>
+  <button class="fcard" data-f="split"><span class="ic">✂</span><b>Split Video</b><span>Cut any video into 2 / 5 / 10 minute parts, in any aspect ratio.</span></button>
+ </div></div>
+<div id="langPick" class="hide"><h2>Choose the languages</h2><p id="lpSub">First choose the narrator's language and the subtitles — then upload your video.</p>
+ <div class="lpbox">
+  <div class="lpcol"><h3>🗣 Narrator speaks</h3><span class="muted">The AI voice and the script are in this language.</span><div class="lpgrid" id="lpVoice"></div></div>
+  <div class="lpcol"><h3>💬 Subtitles</h3><span class="muted">Burned into the video. Can be a different language.</span><div class="lpgrid" id="lpSubs"></div></div>
+ </div>
+ <div class="lpfoot"><button class="ghost" id="lpBack">← Back</button><span class="muted" id="lpNow" style="flex:1;text-align:center"></span><button class="btn" id="lpGo">Continue →</button></div></div>
+<div class="grid2" id="startView">
+ <div class="viewer"><div class="vhead"><span>Source</span><span class="muted">MP4 · MOV · MKV · WEBM</span></div>
+  <label class="drop" id="drop"><input type="file" id="file" accept="video/*">
+   <b>Click to open video file</b><span>or drag and drop here</span></label>
+  <div class="stage hide" id="upStage"><video id="upVid" controls></video>
+   <div class="ov hide" id="cropBox"><span class="tag">Crop</span><div class="crop-handle" data-edge="nw" title="Resize crop nw"></div><div class="crop-handle" data-edge="n" title="Resize crop n"></div><div class="crop-handle" data-edge="ne" title="Resize crop ne"></div><div class="crop-handle" data-edge="w" title="Resize crop w"></div><div class="crop-handle" data-edge="e" title="Resize crop e"></div><div class="crop-handle" data-edge="sw" title="Resize crop sw"></div><div class="crop-handle" data-edge="s" title="Resize crop s"></div><div class="crop-handle" data-edge="se" title="Resize crop se"></div></div></div>
+ </div>
+ <div class="panel">
+  <div class="field hide" id="modeRow"><div class="seg-btns" id="modeSel"><button data-v="recap" class="on">Recap</button><button data-v="split">Split</button></div></div>
+  <div class="lpchip" id="lpChip"><span style="flex:1">🗣 <b id="lpChipV">Burmese</b> · 💬 <b id="lpChipS">Burmese</b></span><button class="ghost" id="lpChange" style="flex:0 0 auto">Change</button></div>
+  <div class="field" id="langRow"><label class="l">Language spoken in the video</label><select id="langSel"></select></div>
+  <div id="upSplitOpts" class="hide"><div class="field"><label class="l">Duration per part</label>
+   <div class="seg-btns" id="upSplitSel"><button data-m="2">2 min</button><button data-m="5" class="on">5 min</button><button data-m="10">10 min</button></div></div>
+   <div class="row" style="margin-bottom:10px"><input type="number" id="upSplitMin" min="0.5" max="60" step="0.5" value="5" style="flex:0 0 90px"><span class="muted">min (custom)</span></div>
+<div class="field"><label class="l">Aspect ratio</label>
+   <div class="seg-btns" id="upRatioSel"><button data-r="original" class="on">Original</button><button data-r="16:9">16:9</button><button data-r="9:16">9:16</button><button data-r="1:1">1:1</button><button data-r="4:5">4:5</button><button data-r="4:3">4:3</button></div></div>
+   <div class="field hide" id="upFitRow"><label class="l">If aspect ratio doesn't match</label>
+   <div class="seg-btns" id="upFitSel"><button data-f="fit" class="on">Add black bars</button><button data-f="fill">Crop to fill</button></div></div>
+   <div class="field"><label class="l">Preview <span class="muted" id="upPvInfo"></span></label><canvas id="upPv" style="display:block;background:#000;border:1px solid var(--line);border-radius:4px;max-width:100%"></canvas></div>
+   <div id="upSplitMsg" class="muted"></div><div id="upSplitList" style="margin:6px 0 10px"></div></div>
+  <div id="voiceHome"></div>
+  <label class="check hide" id="cropRow"><input type="checkbox" id="cropOn"> Crop video (hide logo / unwanted parts)</label>
+  <p class="muted hide" id="cropHint" style="margin:0 0 10px">Drag/resize the blue box to select the area you want. Voice generation will start after cropping.</p>
+  <div id="cropControls" class="hide">
+   <div class="split"><label class="l">X (%)<input type="number" id="crop_x" min="0" max="100" step="0.5" value="0"></label><label class="l">Y (%)<input type="number" id="crop_y" min="0" max="100" step="0.5" value="0"></label><label class="l">Width (%)<input type="number" id="crop_w" min="0" max="100" step="0.5" value="100"></label><label class="l">Height (%)<input type="number" id="crop_h" min="0" max="100" step="0.5" value="100"></label>
+   </div><div class="toolbar"><output class="muted" id="cropSize"></output><button class="ghost" id="cropReset" title="Reset crop">↺ Reset</button></div>
+  </div><p class="err" id="importError"></p>
+  <div class="field hide" id="upLenRow"><label class="l">Movie name</label>
+   <input id="upName" maxlength="150" placeholder="e.g. Titanic 1997 (English title + year works best)" style="width:100%">
+   <div class="muted" style="margin:4px 0 12px">The app reads this film's full story from Wikipedia, so names, twists and the ending are right.</div>
+   <label class="l">How long should the recap be?</label>
+   <div class="seg-btns" id="upLenSel"><button data-s="5">5 min</button><button data-s="10" class="on">10 min</button><button data-s="15">15 min</button><button data-s="20">20 min</button><button data-s="30">30 min</button></div>
+   <div class="row" style="margin-top:6px"><input type="number" id="upMin" min="3" max="40" step="1" value="10" style="flex:0 0 70px"><span class="muted">min (3 – 40) · the AI reads the story, watches the film and writes the script, then you set Subtitles and Blur</span></div></div>
+  <button class="btn big" id="upBtn" disabled>▶ Start Movie Recap</button>
+  <button class="ghost hide" id="splitHome" style="width:100%;margin-top:8px">⟲ Start New Video</button></div>
+</div>
+
+<!-- voice panel (moved into editor later) -->
+<div id="voicePanel"><h2>Voice</h2>
+ <div class="field"><label class="l">Voiceover</label><div class="seg-btns" id="spkSel"><button data-s="ai" class="on">AI narrator · <span id="spkLangName">Burmese</span></button><button data-s="orig">Keep original voice</button></div>
+  <p class="muted hide" id="spkNote" style="margin:6px 0 0"></p>
+  <p class="muted hide" id="origNote" style="margin:6px 0 0">The video keeps its own voice and music (any language). No AI voice is added — only subtitles are burned in at the original speaking times. Subtitles are always on in this mode.</p></div>
+ <div class="field"><div class="seg-btns" id="gSel"><button data-g="f" class="on">Female</button><button data-g="m">Male</button></div></div>
+ <div class="voices field" id="voiceList"></div>
+ <div class="mv hide" id="myVoice">
+  <label class="l">How closely should it copy you?</label>
+  <div class="seg-btns" id="mvMode"><button data-m="my:" class="on">Voice colour</button><button data-m="sv:">Instant style copy</button></div>
+  <p class="muted" id="mvModeNote" style="margin:6px 0 10px"></p>
+  <div id="svBox" class="hide" style="margin-bottom:10px">
+   <div class="row" style="flex-wrap:wrap;gap:6px"><button class="ghost" id="svInstall" style="flex:0 0 auto">Install style engine</button><button class="ghost hide" id="svRemove" style="flex:0 0 auto">Remove engine</button><span class="muted" id="svMsg"></span></div>
+   <p class="muted hide" id="svLog" style="margin:6px 0 0;white-space:pre-wrap;font-size:11px"></p>
+   <div class="field hide" id="svStrRow" style="margin-top:8px"><label class="l">Style strength</label><div class="seg-btns" id="svStr"><button data-v="clear" title="Your voice and pitch; Nilar/Thiha's melody, half of your pace">Light</button><button data-v="balanced" class="on" title="Your voice, pitch, speed and pauses, most of your melody range">Balanced</button><button data-v="strong" title="Everything of yours at full strength">Most like me</button></div></div>
+  </div>
+  <label class="l" id="mvSampleLabel">Your voice sample (min 3s · 10–30s for better accuracy)</label>
+  <div class="row" style="flex-wrap:wrap"><button class="ghost" id="recBtn" style="flex:0 0 auto">Record Voice</button>
+   <label class="ghost" style="flex:0 0 auto;cursor:pointer;border-radius:6px">Upload File<input type="file" id="mvFile" accept="audio/*" class="hide"></label>
+   <span class="muted" id="mvMsg"></span></div>
+  <div class="row hide" id="mvHave" style="margin-top:8px"><audio id="mvAud" controls style="flex:1;height:32px"></audio><button class="ghost" id="mvDel" style="flex:0 0 auto">Delete</button></div>
+  <p class="muted" id="mvBaseNote" style="margin:8px 0 0">The Burmese pronunciation is spoken with <span id="mvBase">Nilar</span> and converted to sound like your voice locally on your computer. The model (~130MB) will be downloaded on first use.</p>
+ </div>
+ <div class="sl"><span>Speed</span><input type="range" id="rate" min="-40" max="40" step="5" value="0"><output id="rateV">0%</output></div>
+ <input type="hidden" id="pitch" value="0"><output id="pitchV" class="hide"></output>
+ <div class="field" style="margin-top:12px"><label class="l">Sample text</label>
+  <textarea id="testTxt" rows="2">မင်္ဂလာပါ။ ဒီနေ့ ဇာတ်ကားလေး တစ်ကားကို အကျဉ်းချုပ်ပြီး ပြောပြပေးသွားပါမယ်။</textarea></div>
+ <div class="row"><button class="ghost" id="testBtn" style="flex:0 0 auto">Test Listen</button><span id="testMsg" class="muted"></span></div>
+ <audio id="testAud" controls class="hide" style="width:100%;margin-top:12px"></audio>
+</div>
+
+
+<!-- EDITOR -->
+<div class="grid2 hide" id="editView">
+ <div class="viewer stagewrap"><div class="vhead"><span>Program</span><span>Blue = Subtitles · Yellow = Blur</span></div>
+  <div class="stage" id="edStage"><video id="edVid" controls></video>
+   <div id="blurLayer"></div>
+   <div class="ov" id="subBox"><span class="tag">Subtitles</span><div class="txt" id="subTxt">နမူနာ မြန်မာစာတန်း ဒီနေရာမှာ ပေါ်ပါမယ်</div><div class="hd"></div></div>
+  </div>
+ </div>
+ <div class="panel">
+  <div id="mrFlow" class="mrflow hide"><div class="mrflow-msg" id="mrFlowMsg"></div>
+   <div class="mrflow-steps"><button data-go="tMovie" id="mrF1"><i>1</i>AI script</button><button data-go="tSub" id="mrF2"><i>2</i>Subtitles</button><button data-go="tBlur" id="mrF3"><i>3</i>Blur</button><button data-go="make" id="mrF4"><i>4</i>Make video</button></div></div>
+  <div class="tabs" id="tabs"><button data-t="tSub" class="on">Subtitles</button><button data-t="tBlur">Blur</button><button data-t="tVoice">Voice</button><button data-t="tVideo">Video</button><button data-t="tText">Texts</button><button data-t="tShort">Short video</button><button data-t="tMovie">🎞 Movie → Recap</button></div>
+
+  <div id="tSub">
+   <label class="check"><input type="checkbox" id="subs" checked> Add subtitles · <span id="subLangName">Burmese</span></label>
+   <div class="field"><label class="l">Font</label><div class="fonts" id="fontList"></div></div>
+   <div class="field"><label class="l">Font size (px for output video)</label>
+    <div class="sl"><span>Size</span><input type="range" id="fsize" min="20" max="120" value="54"><output id="fsizeV">54</output></div></div>
+   <div class="field"><label class="l">Color</label><input type="color" id="fcolor" value="#ffffff" style="width:60px;height:34px;border:0;background:none"></div>
+   <div class="field"><label class="l">Subtitle background</label>
+    <select id="subBg">
+     <option value="none">None</option><option value="blur">Blur</option><option value="color">Color box</option><option value="blurcolor">Blur + Color</option></select>
+    <div id="subBgColorWrap" class="hide" style="margin-top:8px">
+     <div style="display:flex;align-items:center;gap:10px"><input type="color" id="subBgColor" value="#000000" style="width:60px;height:34px;border:0;background:none">
+      <span class="muted" id="subBgSw"></span></div>
+     <div class="sl"><span>Opacity</span><input type="range" id="subBgOp" min="0" max="100" value="60"><output id="subBgOpV">60%</output></div></div>
+    <input type="checkbox" id="subBlur" class="hide"></div>
+   <label class="l">Subtitle box (position / size)</label><div id="subSl"></div>
+  </div>
+
+  <div id="tBlur" class="hide">
+   <label class="check"><input type="checkbox" id="blurOn"> Blur original subtitles</label>
+   <div id="blurWrap" class="hide">
+    <p class="muted" style="margin:0 0 8px">Timestamps are from the <b>original video</b> (e.g. 1:23). Pause the video where needed and click ⏱ to fill in that time.</p>
+    <div id="blurList"></div>
+    <button class="ghost" id="blurAdd" style="width:100%;margin-bottom:12px">+ Add more Blur</button>
+    <label class="l">Selected Blur box (position / size)</label><div id="blurSl"></div></div>
+  </div>
+
+  <div id="tVoice" class="hide"></div>
+
+  <div id="tVideo" class="hide">
+   <div class="field"><label class="l">Video Ratio</label><div class="ratios" id="ratioSel">
+    <button data-r="original" class="on"><i class="rs" style="width:22px;height:14px"></i>Original</button><button data-r="16:9"><i class="rs" style="width:24px;height:13.5px"></i>16:9</button><button data-r="9:16"><i class="rs" style="width:12px;height:21px"></i>9:16</button><button data-r="1:1"><i class="rs" style="width:18px;height:18px"></i>1:1</button><button data-r="4:5"><i class="rs" style="width:16px;height:20px"></i>4:5</button><button data-r="4:3"><i class="rs" style="width:20px;height:15px"></i>4:3</button></div></div>
+   <div class="field"><label class="l">Output Video preview <span class="muted" id="rpInfo"></span></label>
+    <div class="rpwrap"><canvas id="rp"></canvas></div>
+    <p class="muted" style="margin:6px 0 0">Ratio · Mirror · Blur · Subtitle position updates will reflect instantly. Play the video to preview motion.</p></div>
+   <label class="check"><input type="checkbox" id="mirror" checked> Mirror (flip horizontal)</label>
+   <p class="muted">Original audio and music are completely removed; only the AI voice is heard (no background music). Video will automatically slow down if AI voice is longer.</p>
+  </div>
+
+  <div id="tText" class="hide">
+   <div class="toolbar"><span class="muted" id="segCount"></span><span class="muted" id="trUsed"></span></div>
+<div style="margin-bottom:10px"><button class="ghost" id="reTr">Retranslate with Gemini Narrator</button><div class="muted" id="reMsg" style="margin-top:6px;line-height:1.5"></div></div>
+   <div class="segs" id="segs"></div>
+  </div>
+
+
+  <div id="tMovie" class="hide">
+   <p class="muted" style="margin:0 0 10px">Original full movie → finished recap video. The AI reads the film's story and genres, watches the whole film (one picture every 15 seconds) and reads the dialogue, plans the complete story from the opening scene to the ending (35–45 story beats in order), then writes one connected narration in the film's own tone — a romance stays warm and heartfelt, a horror film stays tense. Every sentence is shown on its own moment of the film, in quick cuts from different camera angles.</p>
+   <div class="field"><label class="l">Movie name</label>
+    <input id="mrName" maxlength="150" placeholder="e.g. Titanic 1997 (English title + year works best)" style="width:100%">
+    <div class="muted" id="mrNameMsg" style="margin-top:4px">Used to read the film's full story from Wikipedia. Change it, then press "Write the recap again".</div></div>
+   <div class="field"><label class="l">Film genre (sets the storytelling tone)</label>
+    <select id="mrGenre" style="width:100%"><option value="auto">Auto — from Wikipedia / TMDB</option><option value="romance">Romance — warm, heartfelt</option><option value="drama">Drama — emotional, caring</option><option value="comedy">Comedy — light, witty</option><option value="action">Action / Adventure — exciting, heroic</option><option value="horror">Horror — tense, scary</option><option value="thriller">Thriller / Mystery / Crime — suspenseful</option></select>
+    <div class="muted" id="mrGenreMsg" style="margin-top:4px"></div></div>
+   <div class="field"><label class="l">Recap length</label>
+    <div class="seg-btns" id="mrLenSel"><button data-s="300">5 min</button><button data-s="600" class="on">10 min</button><button data-s="900">15 min</button><button data-s="1200">20 min</button><button data-s="1800">30 min</button></div>
+    <div class="row" style="margin-top:6px"><input type="number" id="mrMin" min="3" max="40" step="1" value="10" style="flex:0 0 70px"><span class="muted">min (3 – 40)</span></div></div>
+   <div class="mrstat"><div id="mrProg" class="hide" style="margin:6px 0 2px"><div style="height:6px;border-radius:3px;background:rgba(127,127,127,.25);overflow:hidden"><i id="mrProgI" style="display:block;height:100%;width:0;background:var(--accent,#e5484d);transition:width .4s"></i></div></div><div id="mrMsg" style="margin:6px 0">Choose the length — the AI writes the whole script. The video is made only when you press Make Movie Recap.</div>
+    <div class="row" style="gap:8px"><span class="muted" id="mrTotal" style="flex:1"></span><button class="ghost" id="mrShow" style="flex:0 0 auto">Show script</button></div></div>
+   <div id="mrEdit" class="hide">
+    <button class="ghost" id="mrPick" style="width:100%">Write the recap again</button>
+    <div class="toolbar"><span></span><button class="ghost" id="mrAdd" title="Add a scene at the current player time">+ Add scene here</button></div>
+    <div id="mrList"></div></div>
+   <div class="field" style="margin-top:12px"><label class="l">Narrator</label>
+    <div class="seg-btns" id="mrAudSel"><button data-a="ai" class="on">AI voice</button><button data-a="mine">My voice</button></div>
+    <p class="muted" style="margin:6px 0 0">Under the narrator the movie's own sound is removed (no background music).</p>
+    </div>
+   <label class="row" style="margin:0 0 6px;gap:6px"><input type="checkbox" id="mrFilm" checked> Film-sound breaks: every 4–5 paragraphs the narrator pauses and the film is heard for 2–3 s (a gunshot, a scream, a key line)</label>
+   <label class="row" style="margin:0 0 10px;gap:6px"><input type="checkbox" id="mrLook" checked> Copyright-safe picture: zoom 5% and slightly change contrast / colour</label>
+   <div class="field"><label class="l">Aspect ratio</label>
+    <div class="seg-btns" id="mrRatioSel"><button data-r="original" class="on">Original</button><button data-r="16:9">16:9</button><button data-r="9:16">9:16</button><button data-r="1:1">1:1</button></div></div>
+   <button class="btn big" id="mrGo">🎞 Make Movie Recap</button>
+  </div>
+  <div id="tShort" class="hide">
+   <p class="muted" style="margin:0 0 10px">Turns this long video into one short video: AI picks the most important moments and retells the story over them. Check and edit every moment and its narration before making the video.</p>
+   <div class="field"><label class="l">Short video length</label>
+    <div class="seg-btns" id="shLenSel"><button data-s="30">30 s</button><button data-s="60" class="on">1 min</button><button data-s="90">1.5 min</button><button data-s="180">3 min</button></div>
+    <div class="row" style="margin-top:6px"><input type="number" id="shMin" min="0" max="10" step="1" value="1" style="flex:0 0 70px"><span class="muted">min</span><input type="number" id="shSec" min="0" max="59" step="5" value="0" style="flex:0 0 70px"><span class="muted">s (your own length, 15 s – 10 min)</span></div></div>
+   <button class="ghost" id="shPick" style="width:100%">✨ Pick key moments with AI</button>
+   <div class="muted" id="shMsg" style="margin:6px 0"></div>
+   <div class="toolbar"><span class="muted" id="shTotal"></span><button class="ghost" id="shAdd" title="Add a moment at the current player time">+ Add moment here</button></div>
+   <div id="shList"></div>
+   <div class="field" style="margin-top:12px"><label class="l">Sound</label>
+    <div class="seg-btns" id="shAudSel"><button data-a="orig">Original movie sound</button><button data-a="ai" class="on">AI voice</button><button data-a="mine">My voice</button></div>
+    <p class="muted" id="shAudNote" style="margin:6px 0 0"></p>
+    <label class="row" id="shGapRow" style="margin-top:6px;gap:6px"><input type="checkbox" id="shGap" checked> After the storyteller speaks, play the movie's own sound with Burmese subtitles</label></div>
+   <div class="field"><label class="l">Aspect ratio</label>
+    <div class="seg-btns" id="shRatioSel"><button data-r="9:16" class="on">9:16</button><button data-r="1:1">1:1</button><button data-r="4:5">4:5</button><button data-r="16:9">16:9</button><button data-r="original">Original</button></div></div>
+   <p class="muted">Subtitle font, size and position come from the Subtitles tab.</p>
+   <button class="btn big" id="shGo">🎬 Make Short Video</button>
+  </div>
+  <div id="blankWarn" class="hide" style="margin-top:14px;padding:10px 12px;border:1px solid #a33;border-radius:6px;color:#e88;background:#2a1515;font-size:13px"></div>
+ <button class="btn big" id="genBtn" style="margin-top:18px">Generate Video</button>
+ </div>
+</div>
+
+<!-- DONE -->
+<div class="panel hide" id="doneCard"><h2>Export — Completed</h2>
+ <div class="stage"><video id="vid" controls></video></div>
+ <div class="row" style="margin-top:14px"><a id="dl" style="flex:0 0 auto"><button class="btn">Download MP4</button></a><button class="ghost" id="backBtn" style="flex:0 0 auto">Edit</button><button class="ghost" id="doneHome" style="flex:0 0 auto">⟲ Start New Video</button></div>
+ <div class="row" id="splitAsk" style="border-top:1px solid var(--line)"><span style="flex:1;color:var(--fg)">Do you want to split the video into parts?</span>
+  <button class="ghost" id="splitYes" style="flex:0 0 auto">✂ Split</button><button class="ghost" id="splitNo" style="flex:0 0 auto">Don't split</button></div>
+ <div id="splitPanel" class="hide" style="padding:10px 12px;background:var(--panel);border-top:1px solid var(--line)">
+  <div class="field"><label class="l">Duration per part</label>
+   <div class="seg-btns" id="splitSel"><button data-m="2">2 min</button><button data-m="5" class="on">5 min</button><button data-m="10">10 min</button></div></div>
+<div class="field"><label class="l">Aspect ratio</label>
+   <div class="seg-btns" id="spRatioSel"><button data-r="original" class="on">Original</button><button data-r="16:9">16:9</button><button data-r="9:16">9:16</button><button data-r="1:1">1:1</button><button data-r="4:5">4:5</button><button data-r="4:3">4:3</button></div></div>
+   <div class="field hide" id="spFitRow"><label class="l">If aspect ratio doesn't match</label>
+   <div class="seg-btns" id="spFitSel"><button data-f="fit" class="on">Add black bars</button><button data-f="fill">Crop to fill</button></div></div>
+   <div class="field"><label class="l">Preview <span class="muted" id="spPvInfo"></span></label><canvas id="spPv" style="display:block;background:#000;border:1px solid var(--line);border-radius:4px;max-width:100%"></canvas></div>
+  <div class="row"><input type="number" id="splitMin" min="0.5" max="60" step="0.5" value="5" style="flex:0 0 90px"><span class="muted">min (custom)</span>
+   <button class="btn" id="splitGo" style="flex:0 0 auto">Split</button></div>
+  <div id="splitMsg" class="muted" style="margin-top:8px"></div>
+  <div id="splitList" style="margin-top:6px"></div>
+ </div>
+</div>
+</main>
+<div class="modal hide" id="storModal"><div class="mbox">
+ <div class="toolbar"><b style="flex:1">Storage — jobs folder</b><span class="muted" id="storTotal"></span><button class="ghost" id="storClose">✕</button></div>
+ <label class="check" style="margin:6px 0"><input type="checkbox" id="storAll"> Select all</label>
+ <div id="storList" class="storlist"></div>
+ <div class="row" style="margin-top:10px"><span class="muted" id="storMsg" style="flex:1"></span><button class="btn" id="storDel" style="flex:0 0 auto;background:var(--bad)" disabled>Delete selected</button></div>
+</div></div>
+<div class="modal hide" id="keyModal"><div class="mbox" style="width:min(520px,92vw)">
+ <div class="toolbar"><b style="flex:1">Gemini API Key</b><button class="ghost" id="keyClose">✕</button></div>
+ <p class="muted" style="margin:6px 0">A Gemini API key (free) is required to translate. Sign in with a Google account at <b>aistudio.google.com/apikey</b> and click "Create API key" to get one.</p>
+ <p class="muted" id="keyNow" style="margin:0 0 6px"></p>
+ <input type="password" id="keyIn" placeholder="AIza..." autocomplete="off" style="width:100%;padding:7px;background:var(--field);color:#eee;border:1px solid var(--line2);font:12px monospace">
+ <label class="check" style="margin:6px 0"><input type="checkbox" id="keyShow"> Show key</label>
+ <div class="row" style="margin-top:8px"><span id="keyMsg" class="muted" style="flex:1"></span><button class="btn" id="keySave" style="flex:0 0 auto" disabled>Save</button></div>
+</div></div>
+<style>
+.nwbox{width:min(1320px,97vw);height:92vh;max-height:92vh;padding:0;overflow:hidden;display:flex;flex-direction:column}
+.nwbox>.toolbar{padding:8px 12px;background:var(--hd);border-bottom:1px solid var(--line);gap:8px}
+.nwbox>.toolbar select{width:auto;max-width:320px}
+.nwmain{flex:1;min-height:0;display:grid;grid-template-columns:150px 1fr}
+.nwsteps{background:var(--hd);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:6px 0}
+.nwsteps button{background:transparent;color:var(--mute);text-align:left;padding:9px 12px;border-radius:0;font-size:12.5px;display:flex;gap:8px;align-items:center}
+.nwsteps button i{font-style:normal;display:inline-flex;width:20px;height:20px;border-radius:50%;border:1px solid #444;align-items:center;justify-content:center;font-size:11px}
+.nwsteps button.on{color:#fff;background:var(--panel);box-shadow:inset 3px 0 var(--acc)}.nwsteps button.on i{border-color:var(--acc);background:var(--acc);color:#fff}
+.nwsteps button:disabled{opacity:.35;cursor:not-allowed}
+.nwsec{overflow:auto;padding:12px 16px;min-height:0}
+.nwsec h3{margin:0 0 8px;font-size:13px;color:#e8e8e8}
+.nwchips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.nwchips button{background:#262626;color:var(--fg);border:1px solid #3a3a3a;padding:4px 10px;border-radius:14px;font-size:12px}
+.nwchips button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.nwgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;grid-auto-rows:max-content}
+.nwcard{background:var(--panel2);border:1px solid var(--line2);border-radius:var(--r);cursor:pointer;overflow:hidden;display:flex;flex-direction:column}
+.nwcard:hover{border-color:var(--acc)}.nwcard.busy{opacity:.55;pointer-events:none}
+.nwcard .th{aspect-ratio:16/9;background:#111 center/cover no-repeat;position:relative}
+.nwcard .th span{position:absolute;left:6px;top:6px;background:rgba(0,0,0,.75);color:#fff;font-size:10.5px;padding:1px 6px;border-radius:2px}
+.nwcard b{margin:6px 8px 2px;font-size:12.5px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.nwcard small{padding:0 8px 7px;color:var(--mute);font-size:11px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.nwmedia{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:12px}
+.nwm{position:relative;border:1px solid var(--line2);background:#111;border-radius:var(--r);overflow:hidden}
+.nwm img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}.nwm .k{position:absolute;left:4px;top:4px;background:rgba(0,0,0,.8);color:#fff;font-size:10.5px;padding:0 5px}
+.nwm .x{position:absolute;right:3px;top:3px;padding:0 6px;font-size:12px;background:rgba(0,0,0,.75);color:#fff}
+.nwm .n{font-size:10.5px;color:var(--mute);padding:3px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nwm .add{position:absolute;right:3px;bottom:22px;padding:1px 8px;font-size:11px}
+.nwbeat{border:1px solid var(--line2);background:#1e1e1e;padding:8px 10px;margin-bottom:8px;border-radius:var(--r)}
+.nwbeat .hdr{display:flex;gap:6px;align-items:center;margin-bottom:6px}.nwbeat .hdr b{flex:1}
+.nwbeat .hdr button{padding:2px 8px;font-size:11px}
+.nwbeat .g{display:grid;grid-template-columns:1fr 1fr 110px;gap:6px;margin-top:6px}
+.nwbeat .g2{display:grid;grid-template-columns:110px 1fr 100px 120px 120px 110px;gap:6px;margin-top:6px;align-items:end}
+.nwbeat label{font-size:10.5px;color:var(--mute);display:block}
+.nwbeat img.mt{width:110px;aspect-ratio:16/9;object-fit:cover;background:#111;border:1px solid #333;display:block}
+.nwthemes{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px;margin-bottom:12px}
+.nwth{border:2px solid transparent;border-radius:6px;cursor:pointer;background:#1a1a1a;padding:4px}
+.nwth.on{border-color:var(--acc)}.nwth:hover{border-color:#555}
+.nwth .pv{position:relative;aspect-ratio:9/12;border-radius:3px;overflow:hidden;background:#333}
+.nwth .pv i{position:absolute;display:block}
+.nwth b{display:block;font-size:11px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nwcols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.nwprev{display:flex;flex-direction:column;align-items:center;gap:8px;background:#111;border:1px solid #333;padding:8px;min-height:260px}
+.nwprev img{max-width:100%;max-height:58vh;display:block}
+.nwlog{font:11.5px/1.5 Consolas,ui-monospace,"MR Noto",monospace;background:#141414;color:#a8a8a8;padding:6px 10px;white-space:pre-wrap;max-height:220px;overflow:auto;margin:8px 0;border:1px solid var(--line)}
+.nwfoot{display:flex;gap:10px;align-items:center;padding:6px 12px;background:var(--hd);border-top:1px solid var(--line);font-size:11.5px}
+.nwfoot #nwMsg{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nwrow{display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap}.nwrow>input[type=text],.nwrow>select{flex:1 1 200px;width:auto;min-width:0}
+.nwrow>button,.nwrow>label.ghost{flex:0 0 auto}
+.nwsmall{font-size:11px;color:var(--mute)}
+#nwVid{max-width:100%;max-height:56vh;background:#000;display:block;margin:8px 0}
+.nwpend{font-size:11.5px;padding:4px 6px;border:1px solid #333;margin-bottom:4px;display:flex;gap:8px;align-items:center}
+.nwpend span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nwpre{display:flex;gap:6px;align-items:center;flex-wrap:wrap;background:#1e1e1e;border:1px solid var(--line2);border-radius:var(--r);padding:7px 10px;margin-bottom:10px}
+.nwpre select{flex:0 1 280px;width:auto;min-width:160px}.nwpre input[type=text]{flex:0 1 230px;width:auto;min-width:140px}
+.nwpre .check{margin:0 0 0 4px;white-space:nowrap}.nwpre .nwsp{flex:1}
+#nwLenHint.warn{color:#e0b050}.nwsmall.err{color:#ef6b6b}
+.nwmode{margin-bottom:10px}.nwmode button{font-size:12.5px;padding:5px 14px}
+.nwcard .th span.dur{left:auto;right:6px;top:auto;bottom:6px}
+.nwcard .th span.age{left:6px;top:auto;bottom:6px;font-weight:600}.nwcard .th span.age.new{background:#1f7a3a}.nwcard .th span.age.old{background:#6b3a1a}
+.nwcard .th span.age.unk{background:rgba(60,60,60,.85);font-weight:400}
+.nwcard .th .play{position:absolute;left:50%;top:50%;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;padding-left:3px;box-sizing:border-box}
+.nwth small{display:block;font-size:10px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nwth .pv i.sk{transform:skewX(-14deg)}.nwth .pv i.dm{transform:rotate(45deg)}
+#nwPlat button{min-width:96px}
+.nwfind{display:grid;grid-template-columns:110px 1fr auto;gap:6px;margin-top:6px;align-items:center}.nwfind label{margin:0}
+.nwpick{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;margin-top:6px;max-height:320px;overflow:auto;background:#151515;border:1px solid #333;padding:6px}
+.nwpick .nwm .add{bottom:20px}
+.nwsrc{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;color:var(--mute);margin-top:6px;line-height:1.35}
+.nwsrc .o{color:var(--acc,#7fd1ff);font-weight:600}.nwsrc a{color:#8ab4ff;text-decoration:underline;cursor:pointer;word-break:break-all}
+.nwm .nwsrc{display:block;margin:0;padding:0 5px 4px;font-size:10px}.nwm .nwsrc span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nwpick .nwm .add{bottom:auto;top:3px}
+.nwcard.sel{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc)}
+.nwcard .th .ck{position:absolute;right:6px;top:6px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.65);border:2px solid #fff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-style:normal}
+.nwcard.sel .th .ck{background:var(--acc);border-color:var(--acc)}
+.nwpickbar{position:sticky;top:-12px;z-index:2;background:var(--hd);border:1px solid var(--line2);padding:6px 10px;border-radius:var(--r)}
+.nwcred{font-size:11.5px;line-height:1.45;background:#151515;border:1px solid #333;padding:6px 10px;max-height:240px;overflow:auto;margin:6px 0}
+.nwcard .nwsrc{padding:0 8px 7px;margin-top:0}.nwcred a{color:#8ab4ff}
+.nwcred div{margin-bottom:5px}.nwcred b{color:#e8e8e8}.nwcred span{color:var(--mute);display:block;word-break:break-all}
+#nwCredTxt{width:100%;font:11.5px Consolas,ui-monospace,monospace}
+.nwcredpick{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 10px;padding:8px 10px;border:1px solid #3a3a3a;border-radius:6px;background:#1d1d1d}
+.nwcredpick .seg-btns{flex:0 0 auto}.nwcredpick .seg-btns button{padding:5px 12px}
+.nwbeat .momt{font-size:11px;color:#8fd18f;margin-top:3px}
+</style>
+<div class="modal hide" id="newsModal"><div class="mbox nwbox">
+ <div class="toolbar"><b id="nwStudio">📰 News Studio</b><span class="muted" style="flex:1" id="nwStudioSub">Free news videos — sports, strange, movies, world, Myanmar…</span>
+  <select id="nwProjects" title="Your news projects"></select><button class="ghost" id="nwNew" title="Start a new news video">+ New</button><button class="ghost" id="nwDel" title="Delete this news project">🗑</button><button class="ghost" id="nwClose" title="Close">✕</button></div>
+ <div class="nwmain">
+  <nav class="nwsteps" id="nwSteps">
+   <button data-s="find" class="on" id="nwStepFind"><i>1</i>Find news</button><button data-s="story"><i>2</i>Story</button><button data-s="media"><i>3</i>Pictures & clips</button>
+   <button data-s="script"><i>4</i>Script</button><button data-s="style"><i>5</i>Style</button><button data-s="render"><i>6</i>Make video</button></nav>
+
+  <section class="nwsec" id="nw_find">
+   <div class="seg-btns nwmode" id="nwMode"><button data-v="news" class="on" id="nwModeNews">📰 News articles</button><button data-v="video">🎞 Videos</button></div>
+   <div class="nwchips" id="nwCats"></div>
+   <div class="nwchips" id="nwFeeds"></div>
+   <div id="nwNewsRows">
+   <div class="nwrow"><input type="text" id="nwQ" placeholder="Search any news topic… e.g. Manchester United, Netflix, UFO, Myanmar earthquake" autocomplete="off"><select id="nwQLang" style="flex:0 0 120px"><option value="en">English news</option><option value="my">Myanmar news</option></select><button class="btn" id="nwQGo">Search</button></div>
+   <div class="nwrow"><input type="text" id="nwUrl" placeholder="…or paste a news article link (https://…)" autocomplete="off"><button class="ghost" id="nwUrlGo">Open link</button><button class="ghost" id="nwBlank" title="Write the story yourself">✍ Write my own story</button></div>
+   </div>
+   <div id="nwVidRows" class="hide">
+    <div class="nwrow"><input type="text" id="nwVQ" placeholder="Search videos… e.g. Champions League, Netflix trailer, Myanmar earthquake" autocomplete="off"><select id="nwVSort" style="flex:0 0 140px"><option value="new">Newest first</option><option value="top">Most relevant</option></select><button class="btn" id="nwVGo">Search YouTube</button></div>
+    <div class="nwrow"><input type="text" id="nwVUrl" placeholder="…or paste a video link (YouTube, TikTok, Facebook, Rednote…)" autocomplete="off"><button class="ghost" id="nwVUrlGo">🎞 Make news from this video</button></div>
+    <p class="nwsmall" id="nwVidHelp" style="margin:0 0 6px">Click a video: its title, description and spoken words (captions) become the story, and the video is downloaded as a clip for your news.</p>
+   </div>
+   <p class="muted" id="nwFindMsg" style="margin:4px 0 8px"></p>
+   <div class="nwgrid" id="nwGrid"></div>
+  </section>
+
+  <section class="nwsec hide" id="nw_story">
+   <div class="nwrow"><input type="text" id="nwTitle" placeholder="Title"><button class="ghost" id="nwSrc" title="Open the original article">↗ Original article</button></div>
+   <div class="nwrow"><span class="l" style="margin:0">News type</span><select id="nwCat" style="flex:0 0 190px"></select><span class="nwsmall">Changing it also changes the template design (sports = scoreboard, movies = cinema …)</span></div>
+   <div class="nwrow hide" id="nwVidBox"><button class="ghost" id="nwSpeech" title="Listen to the clip and add the spoken words to the story">🎙 Get the spoken words from the clip</button><span class="nwsmall" id="nwVidMsg"></span><span class="nwsmall" id="nwVidWhen" style="margin-left:auto"></span></div>
+   <p class="warn" id="nwNote" style="margin:0 0 6px"></p>
+   <label class="l">Story text (from the article — you can edit or paste your own) <span class="muted" id="nwTextN"></span></label>
+   <textarea id="nwText" rows="12" style="width:100%"></textarea>
+   <div class="nwrow" style="margin-top:6px"><input type="text" id="nwWikiQ" placeholder="Add background from Wikipedia: name of a person, club, film…"><button class="ghost" id="nwWiki">+ Add background</button></div>
+   <div class="nwcols" style="margin-top:6px">
+    <div><label class="l">Video length <span class="nwsmall">(up to 15 min)</span></label><div class="nwrow" style="margin:0;flex-wrap:nowrap"><div class="seg-btns" id="nwLen" style="flex:1"></div><input type="number" id="nwLenMin" min="0.5" max="15" step="0.5" placeholder="min" title="Or type the minutes (0.5 – 15)" style="flex:0 0 64px;width:64px"></div>
+     <p class="nwsmall" id="nwLenHint" style="margin:4px 0 0"></p></div>
+    <div><label class="l">Narration language</label><select id="nwLangSel" style="width:100%"></select>
+     <label class="l" style="margin-top:6px">Captions</label><select id="nwSubSel" style="width:100%"></select></div>
+   </div>
+   <h3 style="margin-top:14px">Write the news script</h3>
+   <div class="nwrow"><button class="btn" id="nwGem">✨ Write with Gemini (free key)</button><button class="ghost" id="nwGoo">Google Translate draft (no key)</button><span class="nwsmall" id="nwKeyHint"></span></div>
+   <details id="nwWeb" style="margin:6px 0"><summary class="muted" style="cursor:pointer">Or use the free Gemini website (gemini.google.com) — no API key, no limits on your key</summary>
+    <ol class="nwsmall" style="margin:6px 0 6px 18px;padding:0;line-height:1.7"><li>Press <b>Copy prompt</b>.</li><li>Open gemini.google.com (signed in with Google), paste and send.</li><li>Copy Gemini's whole answer, paste it below and press <b>Use this answer</b>.</li></ol>
+    <div class="nwrow"><button class="ghost" id="nwCopy">📋 Copy prompt</button><button class="ghost" id="nwOpenGem">↗ Open gemini.google.com</button><span class="nwsmall" id="nwCopyMsg"></span></div>
+    <textarea id="nwPrompt" rows="4" readonly class="hide" style="width:100%;font:11px Consolas,monospace"></textarea>
+    <textarea id="nwAnswer" rows="5" placeholder="Paste Gemini's answer here ( {…} )" style="width:100%;font:11.5px Consolas,'MR Noto',monospace"></textarea>
+    <div class="nwrow" style="margin-top:6px"><button class="btn" id="nwUse">Use this answer</button></div></details>
+   <pre class="nwlog hide" id="nwWLog"></pre>
+  </section>
+
+  <section class="nwsec hide" id="nw_media">
+   <h3>In this video <span class="muted" id="nwMediaN"></span></h3>
+   <div class="nwmedia" id="nwMedia"></div>
+   <div class="nwrow"><label class="ghost" style="cursor:pointer">⬆ Upload pictures / videos<input type="file" id="nwUp" accept="image/*,video/*" multiple class="hide"></label><button class="ghost" id="nwDlBtn">From my Downloads</button><button class="ghost" id="nwOpenDl" title="Open the Download window (YouTube, TikTok, Facebook, Rednote…)">↓ Download window</button><span class="nwsmall" id="nwUpMsg"></span></div>
+   <div id="nwDls" class="hide" style="margin-bottom:10px"></div>
+   <div class="nwrow"><input type="text" id="nwVidUrl" placeholder="Video link (YouTube, TikTok, Facebook, Rednote…) — downloads a 720p clip"><button class="ghost" id="nwVidGo">↓ Get clip</button></div>
+   <div id="nwPend"></div>
+   <div class="nwrow"><input type="text" id="nwImgUrl" placeholder="Picture link (https://…jpg)"><button class="ghost" id="nwImgGo">+ Add picture</button></div>
+   <h3 style="margin-top:12px">Pictures from the article</h3><div class="nwmedia" id="nwArt"></div>
+   <h3>Free pictures (Wikimedia Commons, free licence)</h3>
+   <div class="nwrow"><input type="text" id="nwComQ" placeholder="e.g. Old Trafford, Michael Carrick, Shwedagon"><button class="ghost" id="nwComGo">Search</button></div>
+   <div class="nwmedia" id="nwCom"></div>
+   <p class="nwsmall">Use only pictures and clips you are allowed to use. Article pictures belong to their news site.</p>
+  </section>
+
+  <section class="nwsec hide" id="nw_script">
+   <div class="nwcols">
+    <div><label class="l">Main headline</label><input type="text" id="nwHead"></div>
+    <div><label class="l">Opening title (big text at the start, English capitals)</label><input type="text" id="nwKick" placeholder="BREAKING NEWS"></div>
+   </div>
+   <div class="nwcols" style="margin-top:8px">
+    <div><label class="l">Badge text (when a beat has no tag)</label><input type="text" id="nwBadge" placeholder="from the theme"></div>
+    <div><label class="l">Ticker label</label><input type="text" id="nwTLab" placeholder="from the theme"></div>
+   </div>
+   <label class="l" style="margin-top:8px">Scrolling ticker (one line each)</label><textarea id="nwTick" rows="3" style="width:100%"></textarea>
+   <label class="l" style="margin-top:8px">Ending line (Subscribe / Follow) <span class="nwsmall">— YouTube asks to Subscribe, Facebook and TikTok ask to Follow (Style step)</span></label><input type="text" id="nwCta">
+   <div class="toolbar" style="margin:12px 0 6px"><h3 style="margin:0">Beats <span class="muted" id="nwEst"></span></h3><button class="ghost" id="nwPics" title="Search a picture that shows what each beat says (Gemini checks them when you have a key)">🖼 Match pictures to the script</button><button class="ghost" id="nwAddBeat">+ Add beat</button></div>
+   <pre class="nwlog hide" id="nwPLog"></pre>
+   <div id="nwBeats"></div>
+   <h3 style="margin-top:14px">📜 End credits <span class="muted" id="nwCredSec"></span></h3>
+   <p class="nwsmall" style="margin:0 0 4px">The last page of the video lists where every picture and clip comes from: website, link and licence (made from the beats above). Add it or leave it out in the Make video step (or Style).</p>
+   <div class="nwcred" id="nwCredList"></div>
+   <label class="l">Extra credit lines (one per line, e.g. "Thanks to …", "Video idea: …")</label><textarea id="nwCredX" rows="2" style="width:100%"></textarea>
+  </section>
+
+  <section class="nwsec hide" id="nw_style">
+   <div class="nwpre"><b>⭐ My presets</b><select id="nwPreSel" title="Your saved styles"></select><button class="btn" id="nwPreApply">Use preset</button><button class="ghost" id="nwPreDel" title="Delete this preset">🗑</button>
+    <label class="check" title="New news videos start with this preset"><input type="checkbox" id="nwPreDef"> Use for new videos</label>
+    <span class="nwsp"></span><input type="text" id="nwPreName" maxlength="40" placeholder="Preset name, e.g. My football style"><button class="ghost" id="nwPreSave">💾 Save as preset</button></div>
+   <p class="nwsmall" id="nwPreMsg" style="margin:-4px 0 10px">A preset keeps the template, highlight colour, transition, music (with your own music file), sound effects, captions, size, layout, voice and watermark.</p>
+   <div class="nwcols" style="grid-template-columns:1.25fr 1fr">
+    <div>
+     <div class="nwcols" style="margin-bottom:10px"><div><label class="l">Platform</label><div class="seg-btns" id="nwPlat"><button data-v="youtube">▶ YouTube</button><button data-v="facebook">f Facebook</button><button data-v="tiktok">♪ TikTok</button></div></div>
+      <p class="nwsmall" id="nwPlatHint" style="align-self:end;margin:0 0 4px"></p></div>
+     <div class="nwchips" id="nwThG"></div>
+     <div class="nwthemes" id="nwThemes"></div>
+     <div class="nwcols">
+      <div><label class="l">Size</label><div class="seg-btns" id="nwRatio"><button data-v="9:16">9:16 TikTok</button><button data-v="16:9">16:9 YouTube</button><button data-v="1:1">1:1</button></div></div>
+      <div><label class="l">Layout</label><div class="seg-btns" id="nwLayout"><button data-v="card">Picture card</button><button data-v="full">Full screen</button></div></div>
+     </div>
+     <div class="nwcols" style="margin-top:10px">
+      <div><label class="l">Voice</label><select id="nwVoice"></select>
+       <div class="sl" style="margin-top:6px"><span>Speed</span><input type="range" id="nwRate" min="-30" max="30" step="5"><output id="nwRateV"></output></div>
+       <div class="nwrow" style="margin-top:4px"><button class="ghost" id="nwVTest">▶ Test voice</button><audio id="nwVAud" class="hide" controls style="height:28px;flex:1"></audio></div></div>
+      <div><label class="l">Music</label><select id="nwMood"><option value="none">No music</option><option value="news">News pulse</option><option value="sport">Sport energy</option><option value="mystery">Mystery</option><option value="cinema">Cinematic</option><option value="chill">Chill</option><option value="file">My music file</option></select>
+       <div class="nwrow" style="margin-top:6px"><label class="ghost" style="cursor:pointer">⬆ Music file<input type="file" id="nwMusicF" accept="audio/*" class="hide"></label><span class="nwsmall" id="nwMusicN"></span></div>
+       <div class="sl"><span>Music</span><input type="range" id="nwMVol" min="0" max="100" step="5"><output id="nwMVolV"></output></div>
+       <div class="sl"><span>Clip sound</span><input type="range" id="nwCVol" min="0" max="150" step="10"><output id="nwCVolV"></output></div></div>
+     </div>
+     <div class="nwcols" style="margin-top:10px">
+      <div><label class="check"><input type="checkbox" id="nwSfx"> Sound effects (whoosh, hit, ding)</label>
+       <label class="check"><input type="checkbox" id="nwKara"> Words light up as they are spoken</label>
+       <label class="check"><input type="checkbox" id="nwCaps"> Narration captions</label>
+       <label class="check"><input type="checkbox" id="nwIntro"> Opening title slam</label>
+       <label class="check"><input type="checkbox" id="nwOutro"> Subscribe / Follow ending</label>
+       <label class="check"><input type="checkbox" id="nwCtaV"> Speak the ending line</label>
+       <label class="check"><input type="checkbox" id="nwDate"> Show today's date</label>
+       <label class="check" title="A page at the very end that lists the website, link and licence of every picture and clip"><input type="checkbox" id="nwCred"> 📜 End credits page (websites, links, licences)</label></div>
+      <div><label class="l">Caption font</label><select id="nwCFont"><option value="padauk">Padauk</option><option value="padaukb">Padauk Bold</option><option value="noto">Noto Sans</option></select>
+       <div class="sl" style="margin-top:6px"><span>Size</span><input type="range" id="nwCSize" min="0" max="100" step="2"><output id="nwCSizeV"></output></div>
+       <label class="l" style="margin-top:6px">Transition</label><select id="nwTrans"><option value="">Theme default</option><option value="flash">Flash</option><option value="wipe">Wipe</option><option value="glitch">Glitch</option><option value="shutter">Shutter</option><option value="stripes">Stripes</option><option value="fade">Fade to black</option><option value="scan">Scan line</option><option value="none">None</option></select>
+       <label class="l" style="margin-top:6px">Highlight colour</label><div class="row"><input type="color" id="nwHl" style="flex:0 0 50px;height:28px;border:0;background:none"><button class="ghost" id="nwHlReset" style="flex:0 0 auto">Theme colour</button></div></div>
+     </div>
+     <h3 style="margin-top:12px">Your channel</h3>
+     <div class="nwcols"><div><label class="l">Channel name</label><input type="text" id="nwChan" placeholder="your channel name"></div><div><label class="l">Handle / page</label><input type="text" id="nwHandle" placeholder="@yourchannel"></div></div>
+     <div class="nwrow" style="margin-top:8px"><label class="ghost" style="cursor:pointer">⬆ Logo picture<input type="file" id="nwLogoF" accept="image/*" class="hide"></label><img id="nwLogoImg" class="hide" style="height:34px;border:1px solid #333"><button class="ghost hide" id="nwLogoDel">Remove logo</button>
+      <span class="l" style="margin:0 0 0 8px">LIVE text</span><input type="text" id="nwLive" style="flex:0 0 90px"></div>
+     <div class="nwcols"><div><label class="l">Watermark</label><div class="seg-btns" id="nwWm"><button data-v="pill">Pill</button><button data-v="ribbon">Ribbon</button><button data-v="outline">Outline</button><button data-v="off">Off</button></div></div>
+      <div><label class="l">Watermark place</label><div class="seg-btns" id="nwWmPos"><button data-v="tl">↖</button><button data-v="tr">↗</button><button data-v="bl">↙</button><button data-v="br">↘</button></div></div></div>
+    </div>
+    <div><div class="nwrow"><select id="nwPvBeat" style="flex:1"></select><button class="btn" id="nwPv">👁 Preview frame</button></div>
+     <div class="nwprev"><img id="nwFrame" class="hide" alt="Preview"><span class="muted" id="nwPvMsg">Press Preview frame to see one picture of the finished video with this style.</span></div></div>
+   </div>
+  </section>
+
+  <section class="nwsec hide" id="nw_render">
+   <div class="nwcredpick"><b>📜 End credits page</b><div class="seg-btns" id="nwCredPick"><button data-v="on">✓ Add it at the end</button><button data-v="off">✕ No end credits</button></div>
+    <span class="nwsmall" id="nwCredPickH"></span></div>
+   <div class="nwrow"><button class="btn" id="nwGo" style="padding:9px 22px;font-size:13px">🎬 Make news video</button><button class="ghost hide" id="nwStop">Stop</button><span class="muted" id="nwSum"></span></div>
+   <div class="bar" style="width:100%"><i id="nwRBar"></i></div>
+   <pre class="nwlog" id="nwRLog"></pre>
+   <details id="nwCredBox" style="margin:6px 0"><summary class="muted" style="cursor:pointer">📜 Sources & credits — copy them into your video description</summary>
+    <textarea id="nwCredTxt" rows="8" readonly></textarea>
+    <div class="nwrow" style="margin-top:4px"><button class="ghost" id="nwCredCopy">📋 Copy credits</button><a class="ghost" id="nwCredDl" style="padding:4px 10px;text-decoration:none">Download credits.txt</a><span class="nwsmall" id="nwCredMsg"></span></div></details>
+   <div id="nwDone" class="hide"><video id="nwVid" controls></video>
+    <div class="nwrow"><button class="btn" id="nwSave">💾 Save video</button><a id="nwDlA" class="ghost" style="padding:4px 10px;text-decoration:none">Download</a><span class="nwsmall" id="nwSaved"></span></div></div>
+  </section>
+ </div>
+ <div class="nwfoot"><span id="nwMsg" class="muted">Pick a category or search for news.</span></div>
+</div></div>
+<style>
+#horrorModal{--acc:#b3261e;--acc-hi:#cf3a2f;--acc-soft:rgba(179,38,30,.18)}
+#horrorModal .nwbox{background:#151314}
+#horrorModal .nwsteps,#horrorModal .nwbox>.toolbar,#horrorModal .nwfoot{background:#1a1617}
+#hrMsg{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hrln{display:grid;grid-template-columns:34px 130px 150px 110px 120px 70px 96px 1fr 64px;gap:6px;align-items:start;border:1px solid #2e2828;background:#1c1919;padding:6px;margin-bottom:6px;border-radius:var(--r)}
+.hrln.n{border-left:3px solid #7d7066}.hrln.f{border-left:3px solid #d87a8a}.hrln.m{border-left:3px solid #6f9ed8}
+.hrln.guess{box-shadow:inset 0 0 0 1px #e3b341}
+.hrln b{font-size:11px;color:var(--mute);padding-top:5px}
+.hrln select,.hrln input{font-size:11.5px;padding:3px 4px;min-width:0;width:100%}
+.hrln textarea{font-size:12.5px;min-height:34px;resize:vertical;width:100%}
+.hrln .bt{display:flex;flex-direction:column;gap:3px}.hrln .bt button{padding:1px 4px;font-size:11px}
+.hrhead{display:grid;grid-template-columns:34px 130px 150px 110px 120px 70px 96px 1fr 64px;gap:6px;font-size:10.5px;color:var(--mute);padding:0 6px 3px}
+.hrmoods{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-bottom:12px}
+.hrmood{border:1px solid #3a3030;background:#1d1919;padding:8px 10px;border-radius:6px;cursor:pointer}
+.hrmood.on{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc)}
+.hrmood b{display:block;font-size:12.5px;margin-bottom:2px}.hrmood small{color:var(--mute);font-size:11px;display:block;min-height:28px}
+.hrmood button{margin-top:5px;padding:2px 8px;font-size:11px}
+.hrsfx{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 10px}.hrsfx button{font-size:11px;padding:2px 8px}
+.hrimgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin:8px 0 12px}
+.hrimg{position:relative;border:1px solid #3a3030;background:#111;border-radius:var(--r);overflow:hidden}
+.hrimg img{width:100%;aspect-ratio:16/10;object-fit:cover;display:block;filter:saturate(.7) brightness(.85)}
+.hrimg .k{position:absolute;left:4px;top:4px;background:rgba(0,0,0,.8);color:#fff;font-size:11px;padding:0 6px}
+.hrimg .bar2{display:flex;gap:4px;padding:4px}.hrimg .bar2 button{padding:1px 7px;font-size:11px}.hrimg .bar2 span{flex:1;font-size:10.5px;color:var(--mute);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;align-self:center}
+.hrtip{font-size:11.5px;line-height:1.6;color:#b9aea9;background:#1d1919;border:1px solid #3a3030;padding:7px 10px;border-radius:6px;margin:0 0 10px}
+.hrtip code{color:#f0c9a0;font-size:11.5px}
+.hract{border:1px solid #3a3030;background:#1d1919;border-radius:6px;padding:8px 10px;margin:10px 0 4px}
+.hrvoices{margin-top:7px;gap:8px;align-items:center;flex-wrap:wrap}.hrvoices span{font-size:11.5px;color:var(--mute)}.hrvoices select{max-width:230px}
+.hrln .tx{display:flex;flex-direction:column;gap:3px}.hrln .tx .ac{font-size:11px;color:#e0b9a6;background:#171414}
+#hrVid{max-width:100%;max-height:56vh;background:#000;display:block;margin:8px 0}
+</style>
+<div class="modal hide" id="horrorModal"><div class="mbox nwbox">
+ <div class="toolbar"><b>👻 Horror Stories</b><span class="muted" style="flex:1">Scary stories told by a horror narrator — your script or Gemini's, with horror music and your pictures</span>
+  <select id="hrProjects" title="Your horror stories"></select><button class="ghost" id="hrNew" title="Start a new story">+ New</button><button class="ghost" id="hrDel" title="Delete this story">🗑</button><button class="ghost" id="hrClose" title="Close">✕</button></div>
+ <div class="nwmain">
+  <nav class="nwsteps" id="hrSteps">
+   <button data-s="story" class="on"><i>1</i>Story</button><button data-s="lines"><i>2</i>Voices & lines</button><button data-s="music"><i>3</i>Music</button>
+   <button data-s="pics"><i>4</i>Pictures</button><button data-s="make"><i>5</i>Make video</button></nav>
+
+  <section class="nwsec" id="hr_story">
+   <div class="nwcols">
+    <div><label class="l">Story title (shown at the start of the video)</label><input type="text" id="hrTitle" placeholder="e.g. The house at the end of the village"></div>
+    <div><label class="l">Story language</label><select id="hrLangSel" style="width:100%"></select></div>
+   </div>
+   <div class="seg-btns nwmode" id="hrMode" style="margin-top:12px"><button data-v="mine" class="on">✍ My own script</button><button data-v="gemini">✨ Write with Gemini (free key)</button></div>
+   <div id="hrMine">
+    <div class="hrtip">Paste your story. Lines like <code>Narrator: …</code> are told by the narrator. Dialogue is spoken with a girl or a boy voice:
+     <code>Mya (f): …</code> <code>Girl: …</code> <code>မသီတာ: …</code> = female voice, <code>Ko Ko (m): …</code> <code>Boy: …</code> <code>ဦးဘ: …</code> = male voice.
+     "Words in quotes" inside the story are spoken by a character too. With a Gemini key, Gemini finds who speaks (your words stay exactly the same).</div>
+    <textarea id="hrRaw" rows="14" style="width:100%" placeholder="Narrator: That night the rain would not stop…&#10;Mya (f): Did you hear that?&#10;Ko Ko (m): It's only the wind."></textarea>
+    <div class="nwrow" style="margin-top:6px"><button class="btn" id="hrRead">📖 Read my script into lines</button><span class="nwsmall" id="hrRawN"></span></div>
+   </div>
+   <div id="hrGem" class="hide">
+    <label class="l">How long should the story be?</label>
+    <div class="nwrow" style="flex-wrap:nowrap"><div class="seg-btns" id="hrMin" style="flex:1"></div><input type="number" id="hrMinX" min="0.5" max="30" step="0.5" placeholder="min" title="Or type the minutes (0.5 – 30)" style="flex:0 0 70px;width:70px"></div>
+    <label class="l" style="margin-top:8px">Story idea (optional)</label>
+    <textarea id="hrIdea" rows="3" style="width:100%" placeholder="e.g. A girl hears her dead grandmother calling her name from the old well… (empty = Gemini picks an idea)"></textarea>
+    <label class="l" style="margin-top:8px">Where does it happen? (optional)</label>
+    <input type="text" id="hrSetting" placeholder="e.g. a village in Bago, a night bus, an old hospital in Yangon">
+    <div class="nwrow" style="margin-top:8px"><button class="btn" id="hrWrite">✨ Write the story</button><span class="nwsmall" id="hrKey"></span></div>
+   </div>
+   <pre class="nwlog hide" id="hrWLog"></pre>
+  </section>
+
+  <section class="nwsec hide" id="hr_lines">
+   <div class="nwcols">
+    <div><label class="l">Narrator (the storyteller's voice)</label><div class="seg-btns" id="hrNarr"><button data-v="f">👧 Girl</button><button data-v="m" class="on">👦 Boy</button></div>
+     <label class="l" style="margin-top:8px">Narrator style</label><div class="seg-btns" id="hrStyle"><button data-v="deep" class="on">Deep & slow</button><button data-v="whisper">Soft whisper</button><button data-v="echo">Haunted echo</button></div></div>
+    <div><div class="sl"><span>Horror voice</span><input type="range" id="hrStr" min="0" max="100" step="5"><output id="hrStrV"></output></div>
+     <div class="sl"><span>Speed</span><input type="range" id="hrRate" min="-25" max="25" step="5"><output id="hrRateV"></output></div>
+     <div class="nwrow" style="margin-top:6px"><button class="ghost" id="hrTestN">▶ Test narrator</button><button class="ghost" id="hrTestF">▶ Girl (scared)</button><button class="ghost" id="hrTestM">▶ Boy (whisper)</button><audio id="hrAud" class="hide" controls style="height:28px;flex:1"></audio></div></div>
+   </div>
+   <div class="hract">
+    <label class="l">Character voices — how the girls and boys in the story speak</label>
+    <div class="seg-btns" id="hrActing" style="max-width:560px"><button data-v="acted" class="on">🎭 Acted — like a real person</button><button data-v="basic">Basic voice</button></div>
+    <div class="nwrow hrvoices" id="hrActRow"><span>👧 Girl / woman</span><select id="hrGirlV"></select><span>👦 Boy / man</span><select id="hrBoyV"></select>
+     <label class="check"><input type="checkbox" id="hrNarrAct"> Narrator acted too</label></div>
+    <div class="nwsmall" id="hrActNote"></div>
+    <details class="hrkeys" id="hrKeysBox" style="margin-top:8px">
+     <summary class="l" style="cursor:pointer">🔑 Extra Gemini keys for acted voices <span class="muted" id="hrKeyN"></span></summary>
+     <p class="nwsmall" style="margin:6px 0">Only Horror's acted voices use these (Movie recap and News keep using the main 🔑 API Key).
+      Each key must come from a <b>different Google project</b> — keys in the same project share one free limit.
+      When one key's free limit is used up the next key carries on with the <b>same voices and the same speech model</b>, so the story never sounds different.</p>
+     <div id="hrKeyList" class="nwsmall"></div>
+     <div class="nwrow" style="margin-top:6px;align-items:flex-start"><textarea id="hrKeyAdd" rows="2" style="flex:1;min-width:240px" placeholder="Paste one or more keys (one per line)" autocomplete="off" spellcheck="false"></textarea>
+      <button class="ghost" id="hrKeySave">+ Add keys</button><button class="ghost" id="hrKeyCheck">Check keys</button></div>
+    </details>
+   </div>
+   <p class="nwsmall" style="margin:8px 0">Lines spoken by a girl / woman use a female voice, lines spoken by a boy / man use a male voice. Yellow-edged lines were guessed — check who speaks. Pick how every character line is said from the menu — laughing, evil laugh, surprised, crying, out of breath, shivering, in pain, begging, calling from far, ghost whisper, possessed and more. Under each character line you can also write <b>how it is said</b> (e.g. <i>terrified whisper, hiding under the bed</i>) — the acted voice follows it.</p>
+   <div class="toolbar" style="margin:6px 0"><h3 style="margin:0;flex:1">Lines <span class="muted" id="hrEst"></span></h3><button class="ghost" id="hrAdd">+ Add line</button></div>
+   <div class="hrhead"><span>#</span><span>Who</span><span>Voice</span><span>How</span><span>Sound effect</span><span>Pause s</span><span>Picture</span><span>Text</span><span></span></div>
+   <div id="hrLines"></div>
+  </section>
+
+  <section class="nwsec hide" id="hr_music">
+   <h3>Horror music <span class="muted">— made by the app, free of copyright</span></h3>
+   <div class="hrmoods" id="hrMoods"></div>
+   <div class="nwrow"><label class="ghost" style="cursor:pointer">⬆ Use my own music file<input type="file" id="hrMusicF" accept="audio/*" class="hide"></label><span class="nwsmall" id="hrMusicN"></span></div>
+   <div class="nwcols">
+    <div class="sl"><span>Music volume</span><input type="range" id="hrMVol" min="0" max="100" step="5"><output id="hrMVolV"></output></div>
+    <div><label class="check"><input type="checkbox" id="hrSfx"> Sound effects in the story (thunder, knocking, door creak…)</label></div>
+    <div><label class="check"><input type="checkbox" id="hrAuto"> Real sounds where the narrator tells them — "ခြေသံ ကြားရတယ်… ဒေါက် ဒေါက် ဒေါက်" plays real footsteps (also knocking, door slam, creak, wind, thunder, heartbeat)</label></div>
+   </div>
+   <label class="l">Listen to the effects</label><div class="hrsfx" id="hrSfxList"></div>
+   <audio id="hrMAud" class="hide" controls style="width:100%;height:32px"></audio>
+   <p class="nwsmall">All music and effects here are made from code by the app (no recordings), so you can use them in YouTube, Facebook and TikTok videos. If you use your own file, make sure you are allowed to.</p>
+  </section>
+
+  <section class="nwsec hide" id="hr_pics">
+   <h3>Pictures for the story <span class="muted" id="hrImgN"></span></h3>
+   <p class="nwsmall" style="margin:0 0 6px">They are shown in this order from the beginning to the end of the story (dark colours, slow camera move, flicker). To show a picture at a certain line, choose it in that line's Picture box.</p>
+   <div class="nwrow"><label class="btn" style="cursor:pointer">⬆ Upload pictures<input type="file" id="hrUp" accept="image/*" multiple class="hide"></label><span class="nwsmall" id="hrUpMsg"></span></div>
+   <div class="hrimgs" id="hrImgs"></div>
+   <label class="l">Video shape</label><div class="seg-btns" id="hrRatio" style="max-width:420px"><button data-v="16:9" class="on">16:9 YouTube</button><button data-v="9:16">9:16 TikTok / Reels</button><button data-v="1:1">1:1 Square</button></div>
+  </section>
+
+  <section class="nwsec hide" id="hr_make">
+   <div class="nwcols">
+    <div><label class="check"><input type="checkbox" id="hrSubs"> Subtitles</label>
+     <label class="l" style="margin-top:4px">Subtitle language</label><select id="hrSubLang" style="width:100%;margin-bottom:6px"></select>
+     <label class="check"><input type="checkbox" id="hrTitleC"> Title at the start</label>
+     <label class="check"><input type="checkbox" id="hrFlick"> Flickering light</label>
+     <label class="check"><input type="checkbox" id="hrGrain"> Film grain</label></div>
+    <div><label class="l">Subtitle font</label><select id="hrFont"><option value="padaukb">Padauk Bold</option><option value="padauk">Padauk</option><option value="noto">Noto Sans</option><option value="serif">Noto Serif (Burmese only)</option></select>
+     <div class="sl" style="margin-top:6px"><span>Size</span><input type="range" id="hrSize" min="0" max="110" step="2"><output id="hrSizeV"></output></div></div>
+   </div>
+   <div class="nwrow" style="margin-top:8px"><button class="btn" id="hrGo" style="padding:9px 22px;font-size:13px">🎬 Make horror video</button><button class="ghost hide" id="hrStop">Stop</button><span class="muted" id="hrSum"></span></div>
+   <div class="bar" style="width:100%"><i id="hrBar"></i></div>
+   <pre class="nwlog" id="hrRLog"></pre>
+   <div id="hrDone" class="hide"><video id="hrVid" controls></video>
+    <div class="nwrow"><button class="btn" id="hrSave">💾 Save video</button><a id="hrDlA" class="ghost" style="padding:4px 10px;text-decoration:none">Download</a><span class="nwsmall" id="hrSaved"></span></div></div>
+  </section>
+ </div>
+ <div class="nwfoot"><span id="hrMsg" class="muted">Paste your story or let Gemini write one.</span></div>
+</div></div>
+<style>
+.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;overflow:auto;flex:1;min-height:0;padding:2px;grid-auto-rows:max-content;align-content:start}
+.rcard{background:var(--panel2);border:1px solid var(--line2);border-radius:var(--r);cursor:pointer;display:flex;flex-direction:column;overflow:hidden}
+.rcard:hover,.rcard.sel{border-color:var(--acc)}
+.rcard .th{flex-shrink:0;position:relative;aspect-ratio:16/9;background:#111}.rcard .th img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.rcard .du{position:absolute;right:4px;bottom:4px;background:rgba(0,0,0,.8);color:#fff;font-size:11px;padding:1px 5px;border-radius:2px}
+.rcard .tt{margin:6px 8px 2px;max-height:2.7em;font-size:12px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rcard .mt{padding:0 8px 6px;font-size:11px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rplayer{display:flex;gap:12px;margin-bottom:10px}.rplayer .fr{flex:1 1 60%;aspect-ratio:16/9;background:#000;border:1px solid var(--line2)}
+.rplayer iframe{width:100%;height:100%;border:0}.rplayer .side{flex:1 1 40%;display:flex;flex-direction:column;gap:8px;min-width:0}
+.rchips{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+.rskel{cursor:default;pointer-events:none}.rskel .th,.rskel .ln{background:linear-gradient(90deg,var(--panel2) 20%,var(--line2) 50%,var(--panel2) 80%);background-size:250% 100%;animation:rshim 1.3s ease-in-out infinite}
+.rskel .ln{height:10px;border-radius:3px;margin:9px 8px 0}.rskel .ln.s{width:55%;margin:7px 8px 10px}
+@keyframes rshim{0%{background-position:100% 0}100%{background-position:0 0}}
+.rs-load{position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#e6e6e6;font-size:12px;overflow:hidden}
+.rs-load img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:.35}.rs-load span{position:relative;text-shadow:0 1px 3px #000}
+.rs-spin{position:relative;width:34px;height:34px;border-radius:50%;border:3px solid rgba(255,255,255,.22);border-top-color:var(--acc);animation:rspin .8s linear infinite}
+@keyframes rspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.rskel .th,.rskel .ln,.rs-spin{animation-duration:3s}}
+</style>
+<div class="modal hide" id="refModal"><div class="mbox" style="width:min(1180px,96vw);height:88vh;max-height:88vh">
+ <div class="toolbar"><b>▶ Find reference videos</b><button class="ghost" id="refClose" title="Close">✕</button></div>
+ <div class="row" style="margin-top:8px;gap:6px"><input type="text" id="rsQ" placeholder="Search recap videos… e.g. movie recap, 电影解说" autocomplete="off" style="flex:1 1 auto;min-width:0;width:auto"><select id="rsSite" style="flex:0 0 170px;width:170px"></select><select id="rsCount" class="hide"></select><button class="btn" id="rsGo" style="flex:0 0 auto">Search</button></div>
+ <div class="rchips" id="rsChips"></div>
+ <div id="rsPlayer" class="rplayer hide"><div class="fr" id="rsFrame"></div><div class="side"><b id="rsTitle" style="overflow-wrap:anywhere"></b><span class="muted" id="rsMeta"></span><div class="row" style="flex-wrap:wrap;gap:6px"><button class="btn" id="rsDl" style="flex:0 0 auto">↓ Download this video</button><button class="ghost" id="rsHide">Close player</button></div><p class="muted" style="margin:0;font-size:11px">Plays inside the app — no new browser tab.</p></div></div>
+ <p id="rsMsg" role="status" class="muted" style="margin:2px 0 6px"></p>
+ <div class="rgrid" id="rsGrid"></div>
+</div></div>
+<div class="modal hide" id="dlModal"><div class="mbox" style="width:min(900px,96vw);height:84vh;max-height:84vh;overflow:auto">
+ <div class="toolbar"><b>↓ Download by link</b><button class="ghost" id="dlClose" title="Close">✕</button></div>
+ <p class="muted" style="margin:8px 0">Paste a video link from YouTube, Rednote, TikTok, Douyin, Bilibili, Facebook, Instagram… then check resolutions and download.</p>
+ <div class="row" style="margin-bottom:8px;gap:6px"><input type="text" id="refUrl" placeholder="https://…" autocomplete="off" style="flex:1"><button class="ghost" id="refPaste" style="flex:0 0 auto">Paste</button><button class="btn" id="refInspect" style="flex:0 0 auto">Check resolutions</button></div>
+ <div class="row" style="flex-wrap:wrap;gap:6px;margin:0 0 8px;align-items:center"><span class="muted" style="font-size:12px;flex:0 0 auto">Rednote:</span><span id="rnState" class="muted" style="font-size:12px;flex:0 1 auto"></span><button class="ghost" id="rnSignIn" style="flex:0 0 auto">Sign in to Rednote</button><button class="ghost hide" id="rnSignOut" style="flex:0 0 auto">Sign out</button></div>
+ <div id="refInfo" class="hide"><b id="refTitle"></b><div class="row" style="margin:8px 0"><label class="l">Resolution<select id="refQuality"></select></label><button class="btn" id="refDownload" style="flex:0 0 auto">↓ Download video</button></div></div>
+ <p id="refMessage" role="status" class="muted" style="margin:4px 0;white-space:pre-wrap"></p>
+ <details style="margin:6px 0"><summary class="muted" style="cursor:pointer">Advanced: login cookies & supported sites</summary>
+ <div class="row" style="flex-wrap:wrap;margin:8px 0"><label class="check" style="margin:0"><input type="checkbox" id="refCookieUse"> Use imported login cookies</label><label class="ghost" style="cursor:pointer">Import cookies.txt<input class="hide" type="file" id="refCookieFile" accept=".txt"></label><button class="ghost" id="refCookieClear">Remove cookies</button><span class="muted" id="refCookieState"></span><button class="ghost" id="refSitesBtn">All supported sites</button></div>
+ <input id="refSiteSearch" class="hide" type="text" placeholder="Search extractor / platform name">
+ <div id="refSites" class="hide" style="max-height:100px;overflow:auto;margin:6px 0;white-space:pre-wrap"></div></details>
+ <p class="muted" style="margin:0 0 8px;font-size:11px">Download only videos you own or have permission to use. Some sites may need login, region or have DRM.</p>
+ <div class="toolbar" style="margin:6px 0"><b>Downloads</b><button class="ghost" id="refClearHistory" title="Remove all finished, failed and cancelled downloads from this list">🗑 Clear history</button></div>
+ <div id="refHistory" style="min-height:60px;border-top:1px solid var(--line2)"></div>
+</div></div>
+<div class="split5"></div>
+<div id="progCard">
+ <div class="dockbar"><span class="t">Render Log</span><span id="stepTxt">Ready</span><div class="bar"><i id="barI"></i></div><b id="pct">0%</b><span id="etaTxt" class="muted" title="Time so far, and time left in the current step (from its recent speed)"></span></div>
+ <div style="min-height:0;display:flex;flex-direction:column"><pre class="log" id="log"></pre><p class="err" id="err"></p></div>
+</div>
+<footer><span>Recap Studio</span><span id="stFoot">Local</span></footer>
+</div>
+<script>
+const $=id=>document.getElementById(id);let jid=null,timer=null,objUrl=null,voices=[],voice="nilar",gender="f",translator="gemini",ratio="original",font="noto";
+const subBox={x:.08,y:.76,w:.84,h:.18},blur={enabled:false,items:[]};let selBlur=0;
+const newBlur=()=>({x:.1,y:.78,w:.8,h:.14,start:null,end:null,always:true});blur.items.push(newBlur());
+const selB=()=>blur.items[selBlur]||blur.items[0];
+const FONTS={noto:["MR Noto","Noto Sans"],padauk:["MR Padauk","Padauk"],padaukb:["MR PadaukB","Padauk Bold"],serif:["MR Serif","Noto Serif"]};
+const STEPS={queued:"Queued",extract:"Extracting audio",transcribe:"Transcribing",translate:"Translating to Burmese",awaiting_edit:"Ready to edit",render:"Generating video",done:"Completed",error:"An error occurred"};
+const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt=s=>{s=Math.floor(s);return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")};
+function setStep(n){document.querySelectorAll("#steps span").forEach(e=>{const s=+e.dataset.s;e.className=s<n?"ok":s===n?"on":""})}
+function segBtns(id,attr,cb){$(id).addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+ $(id).querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));cb(b.dataset[attr])})}
+$("voiceHome").appendChild($("voicePanel"));
+
+/* voices */
+async function loadVoices(){voices=await(await fetch("/voices")).json();renderVoices()}
+const isMine=v=>/^(my|sv):/.test(v||"");let mvPrefix=(()=>{try{return ["my:","sv:"].includes(localStorage.mvMode)?localStorage.mvMode:"my:"}catch(e){return "my:"}})();
+/* v103: the voice list follows the narration language chosen in the language step */
+const narrLang=()=>(window.OL&&OL.voice)||"my";
+const langVoices=()=>{const L=narrLang();return voices.filter(v=>L==="my"?(v.lang==="my"||v.lang==="multi"):L==="en"?v.lang==="multi":v.lang===L)};
+function renderVoices(){const myId=mvPrefix+(gender==="m"?"thiha":"nilar"),L=narrLang(),ln=(window.OL&&OL.name(L))||"Burmese";
+ const list=langVoices().filter(v=>v.gender===gender);
+ if(!isMine(voice)&&list.length&&!list.find(v=>v.id===voice))voice=list[0].id;
+ $("voiceList").innerHTML=list.map(v=>
+ `<div class="vc ${v.id===voice?"on":""}" data-id="${v.id}"><b>${esc(v.name)}</b><small>${v.lang==="multi"?'<span class="badge m">Multilingual</span>':`<span class="badge n">${esc(ln)} native</span>`}</small></div>`).join("")
+ +`<div class="vc ${voice===myId?"on":""}" data-id="${myId}"><b>My Voice</b><small>With your voice sample</small></div>`;
+ const base=(list.find(v=>v.gender===gender)||{}).name||(gender==="m"?"Thiha":"Nilar");
+ const my=isMine(voice);$("myVoice").classList.toggle("hide",!my);$("mvBase").textContent=base;if(my)showMode()}
+$("voiceList").onclick=e=>{const c=e.target.closest(".vc");if(!c)return;voice=c.dataset.id;renderVoices();
+ const why=voiceNotReady();if(why){$("mvMsg").textContent=why;return}speak($("testTxt").value,$("testBtn"),$("testMsg"))};
+segBtns("gSel","g",g=>{gender=g;if(isMine(voice))voice=mvPrefix+(g==="m"?"thiha":"nilar");
+ else{const first=langVoices().find(v=>v.gender===g);if(first&&!langVoices().find(v=>v.id===voice&&v.gender===g))voice=first.id}renderVoices()});
+$("rate").oninput=e=>$("rateV").textContent=(e.target.value>0?"+":"")+e.target.value+"%";
+$("pitch").oninput=e=>$("pitchV").textContent=(e.target.value>0?"+":"")+e.target.value+"Hz";
+/* v103: spkLang = the narration language code, or "orig" (keep the video's own voice) */
+let spkLang="my";const MY_TEST="မင်္ဂလာပါ။ ဒီနေ့ ဇာတ်ကားလေး တစ်ကားကို အကျဉ်းချုပ်ပြီး ပြောပြပေးသွားပါမယ်။",EN_TEST="Hello. Today I will tell you the story of this movie in a short recap.";
+const sampleOf=l=>(window.OL&&OL.sample(l))||(l==="en"?EN_TEST:MY_TEST);
+segBtns("spkSel","s",v=>{spkLang=v==="orig"?"orig":narrLang();$("origNote").classList.toggle("hide",v!=="orig");
+ if(v==="orig")$("subs").checked=true});
+window.applyOutLangUi=()=>{const L=narrLang(),S=(window.OL&&OL.sub)||L;if(spkLang!=="orig")spkLang=L;
+ $("spkLangName").textContent=OL.name(L);$("subLangName").textContent=S==="none"?"none":OL.name(S);
+ $("subs").checked=S!=="none";$("subBox").classList.toggle("hide",S==="none");
+ const t=$("testTxt");if(!t.dataset.edited)t.value=sampleOf(L);renderVoices()};
+$("testTxt").addEventListener("input",()=>$("testTxt").dataset.edited="1");
+const voiceOpts=()=>({voice,speak:spkLang,rate:+$("rate").value,pitch:+$("pitch").value});
+const player=new Audio();
+async function speak(text,btn,msgEl){if(!text.trim())return alert("No text entered");
+ {const why=voiceNotReady();if(why)return alert(why)}
+ const old=btn.textContent;btn.disabled=true;btn.textContent="⏳ Generating audio...";
+ try{const r=await(await fetch("/tts_test",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text,...voiceOpts()})})).json();
+  if(r.error)throw new Error(r.error);const url=r.url+"?t="+Date.now();
+  if(msgEl){$("testAud").src=url;$("testAud").classList.remove("hide");$("testAud").play();
+   const ENG={myvoice:"✓ My Voice (voice colour)",stylevc:"✓ My Voice (style copy)",edge:"✓ Microsoft Neural Voice"};
+   msgEl.className=ENG[r.engine]?"ok":"warn";msgEl.textContent=ENG[r.engine]||"⚠ No internet — offline voice"}
+  else{player.src=url;player.play()}}catch(e){alert(e.message)}finally{btn.disabled=false;btn.textContent=old}}
+$("testBtn").onclick=()=>speak($("testTxt").value,$("testBtn"),$("testMsg"));
+
+/* my own voice */
+let myRef=null,rec=null,recT=null;
+function showRef(r){myRef=r;$("mvHave").classList.toggle("hide",!r);
+ if(r){$("mvAud").src="/myvoice/ref.wav?t="+Date.now();
+  if(r.old){$("mvMsg").className="warn";$("mvMsg").textContent=`⚠ ${r.seconds}s sample from an older version (low quality, pauses removed) — please record again for Instant style copy`}
+  else{$("mvMsg").className="ok";$("mvMsg").textContent=`✓ ${r.seconds}s recorded`+(r.seconds<20?" — for Instant style copy record 30 s or more":"")}}
+ else{$("mvMsg").className="muted";$("mvMsg").textContent="No sample yet"}}
+async function sendRef(blob,name){$("mvMsg").className="muted";$("mvMsg").textContent="⏳ Saving...";const fd=new FormData();fd.append("audio",blob,name);
+ const r=await(await fetch("/myvoice",{method:"POST",body:fd})).json();if(r.error){$("mvMsg").className="err";$("mvMsg").textContent="⚠ "+r.error;return}showRef(r.ref)}
+fetch("/myvoice").then(r=>r.json()).then(r=>showRef(r.ref)).catch(()=>{});
+$("mvFile").onchange=e=>{const f=e.target.files[0];if(f)sendRef(f,f.name);e.target.value=""};
+$("mvDel").onclick=async()=>{await fetch("/myvoice",{method:"DELETE"});showRef(null)};
+$("recBtn").onclick=async()=>{if(rec&&rec.state==="recording"){rec.stop();return}
+ try{/* raw microphone: the browser's noise suppression / auto-gain smear consonants and pump the volume, which the voice copy then imitates */
+  const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:1,sampleRate:48000}});const chunks=[];
+  let opts={audioBitsPerSecond:256000};for(const t of ["audio/webm;codecs=opus","audio/ogg;codecs=opus"])if(window.MediaRecorder&&MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t)){opts.mimeType=t;break}
+  try{rec=new MediaRecorder(stream,opts)}catch(e){rec=new MediaRecorder(stream)}
+  rec.ondataavailable=e=>chunks.push(e.data);const t0=Date.now();
+  rec.onstop=()=>{clearInterval(recT);stream.getTracks().forEach(t=>t.stop());$("recBtn").textContent="Record";sendRef(new Blob(chunks,{type:rec.mimeType}),"rec.webm")};
+  rec.start();$("recBtn").innerHTML='<span class="rec"></span>Stop';
+  recT=setInterval(()=>{const s=(Date.now()-t0)/1000;$("mvMsg").className="muted";$("mvMsg").textContent=`Recording ${s.toFixed(0)}s — narrate naturally, the way you do in your recaps${s<30?" (keep going: 30 s – 2 min is best)":""}`;if(s>=180)rec.stop()},250);
+ }catch(e){alert("Cannot access mic: "+e.message)}};
+
+/* how closely to copy you: voice colour / instant style copy */
+const MODE_NOTE={"my:":"Your voice colour only — the rhythm and intonation stay Microsoft's. Small download (~130 MB), fast.",
+ "sv:":"Copies your voice colour AND your way of speaking: your pitch, your melody range, your speed and your pauses. Words stay as clear as Nilar/Thiha (the one closest to your pitch is used). Record 30 s – 2 min of natural narration below in a quiet room, mouth about a hand away from the mic. No training. One-time free download of about 4 GB (about 7 GB with an NVIDIA card). Fast with an NVIDIA card; on a normal processor about 20 s of work per second of speech."};
+let svSt=null,svT=null;
+function voiceNotReady(){if(!isMine(voice))return "";const p=voice.slice(0,3);
+ if(!myRef)return "Please record your voice sample first";
+ if(p==="sv:"&&!(svSt&&svSt.installed))return "Install the style engine first (Instant style copy → Install)";return ""}
+function showMode(){document.querySelectorAll("#mvMode button").forEach(b=>b.classList.toggle("on",b.dataset.m===mvPrefix));
+ $("mvModeNote").textContent=MODE_NOTE[mvPrefix];$("svBox").classList.toggle("hide",mvPrefix!=="sv:");
+ $("mvSampleLabel").textContent=mvPrefix==="sv:"?"Your voice sample (30 s – 2 min of natural narration · up to 3 min)":"Your voice sample (min 3s · 10–30s for better accuracy)";
+ if(!myRef)showRef(null);   /* clear a "record a sample first" hint left by the previous mode */
+ if(mvPrefix==="sv:"&&!svSt)loadSv()}
+segBtns("mvMode","m",m=>{mvPrefix=m;try{localStorage.mvMode=m}catch(e){}voice=m+(gender==="m"?"thiha":"nilar");renderVoices()});
+/* instant style copy */
+async function loadSv(){try{svSt=await(await fetch("/stylevc")).json()}catch(e){return}renderSv();
+ clearTimeout(svT);if(svSt.installing)svT=setTimeout(loadSv,2000)}
+function renderSv(){const s=svSt||{};$("svInstall").classList.toggle("hide",!!s.installed);$("svInstall").disabled=!!s.installing;
+ $("svRemove").classList.toggle("hide",!s.installed);$("svStrRow").classList.toggle("hide",!s.installed);
+ document.querySelectorAll("#svStr button").forEach(b=>b.classList.toggle("on",b.dataset.v===(s.strength||"balanced")));
+ const m=$("svMsg");if(s.installing){m.className="muted";m.textContent="⏳ "+(s.step||"Installing...")}
+ else if(s.error){m.className="err";m.textContent="⚠ Install failed — see the details below, then press Install again (finished parts are kept)"}
+ else if(s.installed){m.className="ok";m.textContent="✓ Style engine ready"+(s.info&&s.info.device==="cuda"?" (NVIDIA)":" (CPU — about 20 s of work per second of speech)")+(s.upgraded?"":" · improved v75 voice models (about 2 GB) download automatically on the first Test Listen")}
+ else{m.className="muted";m.textContent="Not installed (free, one-time download)"}
+ const lg=$("svLog");lg.classList.toggle("hide",!(s.log&&s.log.length)||s.installed);lg.textContent=(s.log||[]).slice(-6).join("\n")}
+$("svInstall").onclick=async()=>{if(!await uiConfirm("Download and install the free style engine now?\n\nAbout 4 GB (about 7 GB with an NVIDIA card). This happens once; you can keep using the app while it installs."))return;
+ const r=await(await fetch("/stylevc/install",{method:"POST",headers:{"Content-Type":"application/json"},body:"{}"})).json();if(r.error)return alert(r.error);svSt=r;renderSv();loadSv()};
+$("svRemove").onclick=async()=>{if(!await uiConfirm("Remove the style engine and free its disk space?"))return;const r=await(await fetch("/stylevc",{method:"DELETE"})).json();if(r.error)return alert(r.error);loadSv()};
+segBtns("svStr","v",async v=>{await fetch("/stylevc/strength",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({strength:v})});if(svSt)svSt.strength=v});
+loadSv();
+
+/* upload */
+function pick(f){if(!f)return;Object.assign(crop,{x:0,y:0,w:1,h:1});$("importError").textContent="";if(objUrl)URL.revokeObjectURL(objUrl);objUrl=URL.createObjectURL(f);
+ $("upVid").src=objUrl;$("upStage").classList.remove("hide");$("upBtn").disabled=false;$("drop").querySelector("b").textContent=f.name;$("cropRow").classList.remove("hide");$("drop").classList.add("picked");setTimeout(placeCrop,50)}
+$("file").onchange=e=>pick(e.target.files[0]);
+["dragover","dragenter"].forEach(n=>$("drop").addEventListener(n,e=>{e.preventDefault();$("drop").classList.add("over")}));
+["dragleave","drop"].forEach(n=>$("drop").addEventListener(n,e=>{e.preventDefault();$("drop").classList.remove("over")}));
+$("drop").addEventListener("drop",e=>{const f=e.dataTransfer.files[0];if(f){$("file").files=e.dataTransfer.files;pick(f)}});
+
+/* crop before upload (logo / unwanted area removal) */
+const crop={x:0,y:0,w:1,h:1};
+function upRect(){const v=$("upVid"),W=v.clientWidth,H=v.clientHeight,vw=v.videoWidth||16,vh=v.videoHeight||9;
+ const sc=Math.min(W/vw,H/vh);return{x:(W-vw*sc)/2,y:(H-vh*sc)/2,w:vw*sc,h:vh*sc}}
+function placeCrop(){const b=$("cropBox"),on=$("cropOn").checked;
+ $("cropControls").classList.toggle("hide",!on);b.classList.toggle("hide",!on);
+ for(const k of ["x","y","w","h"])$("crop_"+k).value=+(crop[k]*100).toFixed(2);
+ const v=$("upVid");$("cropSize").textContent=v.videoWidth?`${Math.floor(crop.w*v.videoWidth/2)*2} × ${Math.floor(crop.h*v.videoHeight/2)*2} px`:"";
+ if(!on)return;const r=upRect();b.style.left=r.x+crop.x*r.w+"px";b.style.top=r.y+crop.y*r.h+"px";
+ b.style.width=crop.w*r.w+"px";b.style.height=crop.h*r.h+"px"}
+$("cropOn").onchange=()=>{$("cropHint").classList.toggle("hide",!$("cropOn").checked);placeCrop()};
+$("cropReset").onclick=()=>{Object.assign(crop,{x:0,y:0,w:1,h:1});placeCrop()};
+for(const k of ["x","y","w","h"])$("crop_"+k).oninput=e=>{
+ const n=Number(e.target.value);if(!Number.isFinite(n))return;const value=n/100;
+ if(k==="x"||k==="y")crop[k]=Math.max(0,Math.min(value,1-crop[k==="x"?"w":"h"]));
+ else crop[k]=Math.max(.05,Math.min(value,1-crop[k==="w"?"x":"y"]));placeCrop()};
+$("upVid").addEventListener("loadedmetadata",placeCrop);window.addEventListener("resize",placeCrop);
+new ResizeObserver(placeCrop).observe($("upStage"));
+$("cropBox").addEventListener("pointerdown",e=>{e.preventDefault();const edge=e.target.dataset.edge||"";
+ const el=$("cropBox"),r=upRect();if(!r.w||!r.h)return;el.setPointerCapture(e.pointerId);
+ const sx=e.clientX,sy=e.clientY,st={...crop},clamp=(v,lo,hi)=>Math.max(lo,Math.min(v,hi));
+ el.onpointermove=ev=>{const dx=(ev.clientX-sx)/r.w,dy=(ev.clientY-sy)/r.h;
+  if(!edge){crop.x=clamp(st.x+dx,0,1-st.w);crop.y=clamp(st.y+dy,0,1-st.h)}
+  else{if(edge.includes("w")){crop.x=clamp(st.x+dx,0,st.x+st.w-.05);crop.w=st.x+st.w-crop.x}
+   if(edge.includes("e"))crop.w=clamp(st.w+dx,.05,1-st.x);
+   if(edge.includes("n")){crop.y=clamp(st.y+dy,0,st.y+st.h-.05);crop.h=st.y+st.h-crop.y}
+   if(edge.includes("s"))crop.h=clamp(st.h+dy,.05,1-st.y)}placeCrop()};
+ const cleanup=()=>{el.onpointermove=null};el.onpointerup=cleanup;el.onpointercancel=cleanup;el.onlostpointercapture=cleanup});
+localStorage.removeItem("gemini_key");
+/* upload mode: recap or split only */
+let upMode="recap";
+segBtns("modeSel","v",v=>{upMode=v;$("upSplitOpts").classList.toggle("hide",v!=="split");$("voiceHome").classList.toggle("hide",v==="split");
+ $("upBtn").textContent=v==="split"?"✂ Start Split Video":"▶ Start Movie Recap";$("langRow").classList.toggle("hide",v==="split")});
+segBtns("upSplitSel","m",m=>$("upSplitMin").value=m);
+const splitOpt={up:{ratio:"original",fit:"fit"},sp:{ratio:"original",fit:"fit"}};
+const PV_RATIOS={"16:9":[1280,720],"9:16":[720,1280],"1:1":[1080,1080],"4:5":[1080,1350],"4:3":[960,720]};
+function drawSplitPv(p){const cv=$(p+"Pv");if(!cv||!cv.offsetParent)return;const v=p==="up"?$("upVid"):$("vid");
+ let sx=0,sy=0,sw=v.videoWidth,sh=v.videoHeight;if(!sw||!sh)return;
+ if(p==="up"&&$("cropOn").checked){sx=crop.x*sw;sy=crop.y*sh;sw=crop.w*sw;sh=crop.h*sh}
+ const o=splitOpt[p],[W,H]=PV_RATIOS[o.ratio]||[Math.round(sw),Math.round(sh)];
+ const maxH=220,maxW=cv.parentElement.clientWidth||320,k=Math.min(maxW/W,maxH/H),cw=Math.round(W*k),ch=Math.round(H*k);
+ if(cv.width!==cw||cv.height!==ch){cv.width=cw;cv.height=ch}
+ const x=cv.getContext("2d");x.fillStyle="#000";x.fillRect(0,0,cw,ch);
+ const sc=(o.fit==="fill"&&PV_RATIOS[o.ratio]?Math.max:Math.min)(cw/sw,ch/sh),dw=sw*sc,dh=sh*sc;
+ try{x.drawImage(v,sx,sy,sw,sh,(cw-dw)/2,(ch-dh)/2,dw,dh)}catch(e){}
+ $(p+"PvInfo").textContent=`· ${W}×${H}${PV_RATIOS[o.ratio]?(o.fit==="fill"?" · Crop":" · Letterbox"):" · Original"}`}
+(function pvLoop(){drawSplitPv("up");drawSplitPv("sp");requestAnimationFrame(pvLoop)})();
+["up","sp"].forEach(p=>{segBtns(p+"RatioSel","r",r=>{splitOpt[p].ratio=r;$(p+"FitRow").classList.toggle("hide",r==="original")});
+ segBtns(p+"FitSel","f",f=>splitOpt[p].fit=f)});
+/* split part rows: in the desktop window a plain <a> download does nothing, so
+   clicks are intercepted below and routed to the native save dialog */
+function partRow(p,i){return `<div class="row" style="margin-bottom:4px"><span>Part ${i+1} · ${fmt(p.seconds)}</span><a class="partdl" data-name="${p.name}" href="/part/${jid}/${p.name}" style="flex:0 0 auto"><button class="ghost">Download</button></a></div>`}
+document.addEventListener("click",e=>{const a=e.target.closest("a.partdl");if(!a)return;
+ if(window.pywebview&&pywebview.api){e.preventDefault();pywebview.api.save_part(jid,a.dataset.name).then(r=>{if(r)$("log").textContent+="\nSaved: "+r+"\n"})}});
+async function splitOnly(btn,label){const minutes=+$("upSplitMin").value||5;$("upSplitList").innerHTML="";
+ const sr=await(await fetch("/split/"+jid,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({minutes,...splitOpt.up})})).json();
+ if(sr.error)throw new Error(sr.error);$("upSplitMsg").className="muted";
+ const t=setInterval(async()=>{const s=await(await fetch("/status/"+jid)).json();const sp=s.split||{};
+  $("log").textContent=(s.log||[]).join("\n");$("barI").style.width=(sp.progress||0)+"%";$("pct").textContent=(sp.progress||0)+"%";
+  if(!sp.done&&!sp.error)$("upSplitMsg").textContent=`⏳ Splitting... ${sp.progress||0}%`;
+  if(sp.error){clearInterval(t);$("upSplitMsg").className="err";$("upSplitMsg").textContent="⚠ "+sp.error;btn.disabled=false;btn.textContent=label}
+  if(sp.done){clearInterval(t);$("upSplitMsg").className="ok";$("upSplitMsg").textContent=`✓ ${sp.parts.length} parts ready`;btn.disabled=false;btn.textContent=label;
+   $("upSplitList").innerHTML=sp.parts.map(partRow).join("");$("splitHome").classList.remove("hide")}},800)}
+// Parse a fetch response as JSON; if the server answered with an HTML error
+// page (e.g. upload too large), show a readable message instead of
+// "Unexpected token '<' ...".
+async function jres(r){const t=await r.text();try{return JSON.parse(t)}catch(e){throw new Error(r.status===413?"Video file is too large":"Server error ("+r.status+") — please try again")}}
+segBtns("upLenSel","s",s=>{$("upMin").value=s});
+$("upBtn").onclick=async()=>{const f=$("file").files[0];if(!f)return;
+ if(window.feature==="movie"&&!$("upName").value.trim()&&!await uiConfirm("No movie name — the AI can only use the dialogue and the pictures, so names and twists may be wrong. Continue without it?"))return $("upName").focus();
+ if(window.feature==="movie"){const m=Math.max(3,Math.min(40,Math.round(+$("upMin").value||10)));$("upMin").value=m;$("mrMin").value=m;window.mrAuto=m*60}
+ const btn=$("upBtn"),label=btn.textContent;btn.disabled=true;btn.textContent="Uploading...";$("importError").textContent="";
+ try{const fd=new FormData();fd.append("video",f);
+  if($("cropOn").checked)for(const k of["x","y","w","h"])fd.append("crop_"+k,crop[k]);
+  fd.append("mode",upMode);fd.append("lang",$("langSel").value);
+  fd.append("out_lang",narrLang());fd.append("sub_lang",(window.OL&&OL.sub)||narrLang());
+  if(window.feature==="movie"){fd.append("feature","movie");fd.append("movie_name",$("upName").value.trim())}
+  const response=await fetch("/upload",{method:"POST",body:fd});const r=await jres(response);if(!response.ok||r.error)throw new Error(r.error||"Upload failed");
+  jid=r.id;if(upMode==="split"){btn.textContent="Splitting...";await splitOnly(btn,label);return}
+  const ar=await fetch("/analyze/"+jid,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({translator,gemini_key:""})});
+  if(!ar.ok)throw new Error((await ar.json()).error||"Could not start");
+  $("drop").classList.add("hide");setStep(1);poll();
+ }catch(e){$("importError").textContent=e.message;btn.disabled=false;btn.textContent=label}};
+
+/* v105: while a video is being made every make/generate button stays disabled */
+let rendering=false;const MAKE_BTNS=["genBtn","shGo","mrGo","mrPick"];
+function setRendering(on){rendering=on;MAKE_BTNS.forEach(id=>{const b=$(id);if(b)b.disabled=on});
+ const g=$("mrGo");if(g)g.textContent=on?"⏳ Making the video… please wait":"🎞 Make Movie Recap"}
+function poll(){clearInterval(timer);timer=setInterval(async()=>{const s=await(await fetch("/status/"+jid)).json();
+ if(s.step==="render"&&!rendering)setRendering(true);
+ $("stepTxt").textContent=STEPS[s.step]||s.step;$("pct").textContent=s.progress+"%";$("barI").style.width=s.progress+"%";
+ const lg=$("log"),atEnd=lg.scrollHeight-lg.scrollTop-lg.clientHeight<40;lg.textContent=s.log.join("\n");if(atEnd)lg.scrollTop=lg.scrollHeight;
+ $("err").textContent=s.error||"";showEta(s);
+ if(s.step==="error"){clearInterval(timer);setRendering(false)}
+ if(s.step==="awaiting_edit"){clearInterval(timer);showEdit(s)}
+ if(s.step==="done"){clearInterval(timer);setStep(4);$("doneCard").classList.remove("hide");outKind=s.output==="short.mp4"?"short":s.output==="movierecap.mp4"?"movierecap":"";const q=outKind?"?f="+outKind+"&":"?";$("vid").src="/preview/"+jid+q+"t="+Date.now();$("dl").href="/download/"+jid+(outKind?"?f="+outKind:"");$("splitAsk").classList.toggle("hide",outKind==="short");setRendering(false)}
+},1000)}
+
+// ---- elapsed time + time left in the current step ----
+function showEta(s){const e=$("etaTxt");if(!e)return;
+ const f=x=>{x=Math.max(0,Math.round(x));const h=Math.floor(x/3600),m=Math.floor(x%3600/60),q=x%60;return h?`${h}h ${String(m).padStart(2,"0")}m`:m?`${m}m ${String(q).padStart(2,"0")}s`:`${q}s`};
+ // No whole-render guess: the progress bar is not linear in time (one slow step made 4 % read as "35 h left").
+ if(s.step==="render"&&s.render_start){
+  const el=Date.now()/1000-s.render_start;
+  e.textContent=`Elapsed ${f(el)}`+(s.eta!=null?` · this step about ${f(s.eta)} left`:"");
+ }else if(s.eta!=null&&s.step!=="done"){e.textContent=`≈ ${f(s.eta)} left in this step`}else e.textContent=""}
+
+// Lines that are only music notes or sound tags ("[Music]", "♪ ♪") have nothing to narrate.
+const speakable=t=>/[\p{L}\p{N}]/u.test((t||"").replace(/\[[^\]]*\]|\([^)]*\)|[♪♫♬♩]/g," "));
+function showEdit(s){setStep(2);if(s.id!==showEdit.last){shClips=[];showEdit.last=s.id}$("startView").classList.add("hide");$("editView").classList.remove("hide");$("tVoice").appendChild($("voicePanel"));
+ $("voicePanel").style.cssText="border:0;padding:0;background:none";$("voicePanel").querySelector("h2").classList.add("hide");
+ $("edVid").src="/input/"+jid+"?t="+Date.now();
+ $("segCount").textContent=`${s.segments.length} lines`;
+ $("trUsed").textContent=s.translator_used==="gemini"?"Gemini Narrator":"Google Translate (Literal)";
+ $("segs").innerHTML=s.segments.map((g,i)=>`<div class="seg"><div class="t">${fmt(g.start)}<br>${fmt(g.end)}<button class="ghost" data-p="${i}">▶</button></div>
+  <div><div class="en">${esc(g.en)}</div><textarea rows="2" data-i="${i}"${speakable(g.en)?"":` data-ns="1" placeholder="(music / sound only — no narration)"`}>${esc(g.my)}</textarea></div></div>`).join("");
+ if(s.segments[0])setPreviewText(s.segments[0].my||$("subTxt").textContent);
+ refreshBlankWarn();
+ requestAnimationFrame(place);
+ {const f=window.feature;const sb=document.querySelector('#tabs button[data-t="tShort"]'),mb=document.querySelector('#tabs button[data-t="tMovie"]');
+  if(f){sb.classList.toggle("hide",f!=="short");mb.classList.toggle("hide",f!=="movie")}
+  /* v102: Original -> Recap narrates its own script, so the translated Texts list is not shown there */
+  const tt=document.querySelector('#tabs button[data-t="tText"]');if(tt)tt.classList.toggle("hide",f==="movie");$("mrFlow").classList.toggle("hide",f!=="movie")}
+ const ft={short:"tShort",movie:"tMovie"}[window.feature];if(ft&&!showEdit.tabbed){showEdit.tabbed=1;const tb=document.querySelector(`#tabs button[data-t="${ft}"]`);if(tb)tb.click()}}
+$("segs").addEventListener("click",e=>{const i=e.target.dataset.p;if(i===undefined)return;
+ speak(document.querySelector(`#segs textarea[data-i="${i}"]`).value,e.target,null)});
+$("segs").addEventListener("focusin",e=>{if(e.target.dataset.i!==undefined)setPreviewText(e.target.value)});
+$("segs").addEventListener("input",e=>{if(e.target.dataset.i!==undefined)setPreviewText(e.target.value);refreshBlankWarn()});
+segBtns("tabs","t",t=>{["tSub","tBlur","tVoice","tVideo","tText","tShort","tMovie"].forEach(id=>$(id).classList.toggle("hide",id!==t));
+ $("genBtn").classList.toggle("hide",t==="tShort"||t==="tMovie");if(t==="tShort")shLoad();if(t==="tMovie")mrLoad();
+ $("blurLayer").style.cssText=t==="tBlur"?"position:absolute;inset:0;z-index:3;pointer-events:none":"";
+ document.querySelectorAll("#mrFlow [data-go]").forEach(b=>b.classList.toggle("on",b.dataset.go===t));});
+segBtns("ratioSel","r",r=>{ratio=r;styleSub()});
+$("mirror").addEventListener("change",drawRP);
+
+/* long video -> short story video */
+let outKind="",shClips=[],shAud="ai",shRatio="9:16",shT=null;
+const shTarget=()=>Math.max(15,Math.min(600,(+$("shMin").value||0)*60+(+$("shSec").value||0)));
+const tIn=s=>{s=Math.max(0,+s||0);return Math.floor(s/60)+":"+(s%60).toFixed(1).padStart(4,"0")};
+const tOut=v=>{v=String(v).trim();const m=v.match(/^(\d+):(\d+(?:\.\d+)?)$/);return m?+m[1]*60+ +m[2]:+v||0};
+segBtns("shLenSel","s",s=>{$("shMin").value=Math.floor(s/60);$("shSec").value=s%60});
+const AUD_NOTE={orig:"Keeps the movie's own voices and music in each moment; Burmese subtitles of the dialogue are added. Narration text is not spoken.",
+ ai:"Your narration is spoken with the AI voice chosen in the Voice tab (Nilar/Thiha if a My Voice option is selected). The movie sound is turned down while it speaks.",
+ mine:"Your narration is spoken in your own voice — choose and set up a My Voice option in the Voice tab first. The movie sound is turned down while it speaks."};
+function shAudShow(){$("shAudNote").textContent=AUD_NOTE[shAud];$("shGapRow").classList.toggle("hide",shAud==="orig")}shAudShow();
+segBtns("shAudSel","a",a=>{shAud=a;shAudShow()});segBtns("shRatioSel","r",r=>shRatio=r);
+function shRender(){const tot=shClips.reduce((a,c)=>a+Math.max(0,c.end-c.start),0);
+ $("shTotal").textContent=shClips.length?`${shClips.length} moments · ${fmt(tot)} of footage (narration may lengthen a moment)`:"No moments yet";
+ $("shList").innerHTML=shClips.map((c,k)=>`<div class="seg" data-k="${k}"><div class="t">#${k+1}<br><button class="ghost" data-act="play" title="Play this moment">▶</button><button class="ghost" data-act="del" title="Remove">✕</button></div>
+  <div><div class="row" style="gap:4px;margin-bottom:4px"><input data-f="start" value="${tIn(c.start)}" style="flex:0 0 72px"><button class="ghost" data-act="ts" title="Use player time">⏱</button><span class="muted">→</span><input data-f="end" value="${tIn(c.end)}" style="flex:0 0 72px"><button class="ghost" data-act="te" title="Use player time">⏱</button><span class="muted">${(c.end-c.start).toFixed(1)}s</span></div>
+  <textarea rows="3" data-f="say" placeholder="Narration for this moment">${esc(c.say)}</textarea></div></div>`).join("")}
+$("shList").addEventListener("change",e=>{const row=e.target.closest("[data-k]"),f=e.target.dataset.f;if(!row||!f)return;const c=shClips[+row.dataset.k];
+ if(f==="say")c.say=e.target.value;else{c[f]=tOut(e.target.value);shRender()}});
+$("shList").addEventListener("input",e=>{const row=e.target.closest("[data-k]");if(row&&e.target.dataset.f==="say")shClips[+row.dataset.k].say=e.target.value});
+$("shList").addEventListener("click",e=>{const b=e.target.closest("button");const row=e.target.closest("[data-k]");if(!b||!row)return;
+ const k=+row.dataset.k,c=shClips[k],v=$("edVid"),act=b.dataset.act;
+ if(act==="del"){shClips.splice(k,1);shRender()}
+ else if(act==="ts"){c.start=v.currentTime;shRender()}else if(act==="te"){c.end=v.currentTime;shRender()}
+ else if(act==="play"){v.currentTime=c.start;v.play();const stop=()=>{if(v.currentTime>=c.end){v.pause();v.removeEventListener("timeupdate",stop)}};v.addEventListener("timeupdate",stop)}});
+$("shAdd").onclick=()=>{const t=$("edVid").currentTime||0;shClips.push({start:t,end:t+6,say:""});shClips.sort((a,b)=>a.start-b.start);shRender()};
+async function shLoad(){if(!jid)return;try{const r=await(await fetch("/short/"+jid)).json();if(r.clips&&!shClips.length)shClips=r.clips;
+ if(r.running){$("shMsg").textContent="⏳ AI is picking moments...";clearTimeout(shT);shT=setTimeout(shLoad,1500);$("shPick").disabled=true;return}
+ $("shPick").disabled=false;if(r.error)$("shMsg").textContent="⚠ "+r.error;shRender()}catch(e){}}
+$("shPick").onclick=async()=>{if(shClips.length&&!await uiConfirm("Replace the current moments with a new AI pick?"))return;
+ const r=await(await fetch("/short/"+jid+"/pick",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({seconds:shTarget(),lang:narrLang(),sub_lang:(window.OL&&OL.sub)||narrLang()})})).json();
+ if(r.error)return alert(r.error);shClips=[];$("shPick").disabled=true;$("shMsg").textContent="⏳ AI is picking moments — see the Log below";
+ clearTimeout(shT);shT=setTimeout(async function w(){const s=await(await fetch("/short/"+jid)).json();
+  if(s.running){shT=setTimeout(w,1500);return}$("shPick").disabled=false;shClips=s.clips||[];
+  $("shMsg").textContent=s.error?"⚠ "+s.error:(s.how==="gemini"?"✓ AI picked these moments. Check, edit, add or remove them.":"No Gemini key or Gemini busy — evenly spaced moments were chosen. Edit them as you like.");shRender()},1500)};
+$("shGo").onclick=async()=>{if(!shClips.length)return alert("Pick or add some moments first");
+ if(shAud==="mine"&&!isMine(voice))return alert("Choose a My Voice option in the Voice tab first");
+ if(shAud==="mine"){const why=voiceNotReady();if(why)return alert(why)}
+ const body={clips:shClips,audio:shAud,gap_sound:$("shGap").checked,ratio:shRatio,lang:narrLang(),sub_lang:(window.OL&&OL.sub)||narrLang(),voice,rate:+$("rate").value,mirror:$("mirror").checked,subtitles:$("subs").checked,
+  sub_style:{box:subBox,font,size:+$("fsize").value,color:$("fcolor").value,bgblur:$("subBlur").checked,bg:bgMode(),bg_color:$("subBgColor").value,bg_opacity:+$("subBgOp").value/100}};
+ const r=await(await fetch("/short/"+jid+"/render",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})).json();
+ if(r.error)return alert(r.error);$("shGo").disabled=true;resetSplit();$("doneCard").classList.add("hide");setStep(3);$("progCard").classList.remove("hide");poll()};
+
+/* v94: original full movie -> recap video · v104: movie name + plot / vision / dialogue script, no movie search */
+let mrClips=[],mrAud="ai",mrRatio="original",mrT=null,mrInfo={};
+const mrTarget=()=>Math.max(180,Math.min(2400,(+$("mrMin").value||10)*60));
+segBtns("mrLenSel","s",s=>{$("mrMin").value=Math.round(s/60);mrWrite(!mrClips.length)});
+$("mrMin").addEventListener("change",()=>mrWrite(!mrClips.length));
+$("mrShow").onclick=()=>{const h=$("mrEdit").classList.toggle("hide");$("mrShow").textContent=h?"Show script":"Hide script"};
+let mrWaiting=false;segBtns("mrAudSel","a",a=>mrAud=a);segBtns("mrRatioSel","r",r=>mrRatio=r);$("mrFilm").addEventListener("change",()=>mrRender());
+function mrShowInfo(){$("mrName").value=mrInfo.title||"";
+ const TN={romance:"Romance / Drama",drama:"Drama",comedy:"Comedy",action:"Action / Adventure",horror:"Horror / Thriller",thriller:"Thriller / Mystery",general:"General"};
+ $("mrGenreMsg").textContent=(mrInfo.genres&&mrInfo.genres.length?`Genres found: ${mrInfo.genres.join(", ")}`:"")+(mrInfo.tone?` · script written in the ${TN[mrInfo.tone]||mrInfo.tone} tone`:"")+(mrInfo.beats&&mrInfo.beats.length?` · ${mrInfo.beats.length} story beats`:"");
+ $("mrNameMsg").textContent=mrInfo.page?`✓ Story read from ${mrInfo.source||"Wikipedia"}: ${mrInfo.page}`:mrInfo.plot_for?"⚠ No story found for this name — check the spelling (English title + year works best).":"Used to read the film's full story from Wikipedia. Change it, then press \"Write the recap again\"."}
+function mrSaveInfo(){if(jid)fetch("/movierecap/"+jid+"/info",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({info:{title:mrInfo.title||""}})})}
+$("mrName").addEventListener("change",()=>{const t=$("mrName").value.trim();if(t===(mrInfo.title||""))return;mrInfo={title:t};mrShowInfo();mrSaveInfo()});
+/* v99: the narrator never stops, so a scene lasts as long as its narration (about 10 Burmese letters per second) */
+const mrSecs=c=>(c.say||"").trim()?(c.say.trim().length/((window.OL&&OL.cps(narrLang()))||10)+0.35):Math.max(0,c.end-c.start);
+function mrRender(){const tot=mrClips.reduce((a,c)=>a+mrSecs(c)+(c.orig!=null&&!c.hook&&$("mrFilm").checked?(+c.orig_len||2.5):0),0);
+ $("mrTotal").textContent=mrClips.length?`${mrClips.length} scenes · about ${fmt(tot)} of non-stop narration`+(tot>mrTarget()*1.1?` — longer than ${Math.round(mrTarget()/60)} min; the whole story is kept`:""):"No scenes yet";
+ $("mrList").innerHTML=mrClips.map((c,k)=>`<div class="seg" data-k="${k}"${c.hook?' style="border-left:3px solid #e5484d"':""}><div class="t">${c.hook?"🔥 Hook":"#"+(k+1-mrClips.filter(x=>x.hook).length)}${c.scene?`<br><span class="muted" style="font-size:11px" title="Scene from the film's timeline">${esc(c.scene)}</span>`:""}<br><button class="ghost" data-act="play" title="Play this scene">▶</button><button class="ghost" data-act="del" title="Remove">✕</button></div>
+  <div><div class="row" style="gap:4px;margin-bottom:4px"><input data-f="start" value="${tIn(c.start)}" style="flex:0 0 72px"><button class="ghost" data-act="ts" title="Use player time">⏱</button><span class="muted">→</span><input data-f="end" value="${tIn(c.end)}" style="flex:0 0 72px"><button class="ghost" data-act="te" title="Use player time">⏱</button><span class="muted">${(c.end-c.start).toFixed(1)}s</span></div>
+  ${c.hook?`<div class="muted" style="font-size:12px;margin-bottom:4px">Hook — read at the very start over a striking moment of the film (never the ending). Then the story starts from the beginning.</div>`:""}<textarea rows="3" data-f="say" placeholder="Narration for this scene">${esc(c.say)}</textarea>${c.hook?"":c.orig!=null?`<div class="row" style="gap:4px;margin-top:4px;font-size:12px"><span title="After this narration the narrator pauses and the film's own sound plays">🔊 Film sound after this:</span><input data-f="orig" value="${tIn(c.orig)}" style="flex:0 0 72px"><button class="ghost" data-act="to" title="Use player time">⏱</button><input data-f="orig_len" type="number" min="2" max="3" step="0.5" value="${(+c.orig_len||2.5).toFixed(1)}" style="flex:0 0 54px"><span class="muted">s</span><button class="ghost" data-act="po" title="Listen to the film sound">▶</button><button class="ghost" data-act="xo" title="No film sound here">✕</button></div>`:`<button class="ghost" data-act="ao" style="margin-top:4px;font-size:12px" title="The narrator pauses after this and the film's own sound plays for 2-3 s">+ 🔊 Film sound after this</button>`}</div></div>`).join("")}
+$("mrList").addEventListener("change",e=>{const row=e.target.closest("[data-k]"),f=e.target.dataset.f;if(!row||!f)return;const c=mrClips[+row.dataset.k];
+ if(f==="say")c.say=e.target.value;else if(f==="orig_len"){c.orig_len=Math.max(2,Math.min(3,+e.target.value||2.5));mrRender()}else{c[f]=tOut(e.target.value);mrRender()}});
+$("mrList").addEventListener("input",e=>{const row=e.target.closest("[data-k]");if(row&&e.target.dataset.f==="say")mrClips[+row.dataset.k].say=e.target.value});
+$("mrList").addEventListener("click",e=>{const b=e.target.closest("button");const row=e.target.closest("[data-k]");if(!b||!row)return;
+ const k=+row.dataset.k,c=mrClips[k],v=$("edVid"),act=b.dataset.act;
+ if(act==="del"){mrClips.splice(k,1);mrRender()}
+ else if(act==="ts"){c.start=v.currentTime;mrRender()}else if(act==="te"){c.end=v.currentTime;mrRender()}
+ else if(act==="ao"){c.orig=Math.max(c.start,c.end-2.5);c.orig_len=2.5;mrRender()}else if(act==="xo"){delete c.orig;delete c.orig_len;mrRender()}
+ else if(act==="to"){c.orig=v.currentTime;mrRender()}
+ else if(act==="po"){const e2=c.orig+(+c.orig_len||2.5);v.currentTime=c.orig;v.play();const stop=()=>{if(v.currentTime>=e2){v.pause();v.removeEventListener("timeupdate",stop)}};v.addEventListener("timeupdate",stop)}
+ else if(act==="play"){v.currentTime=c.start;v.play();const stop=()=>{if(v.currentTime>=c.end){v.pause();v.removeEventListener("timeupdate",stop)}};v.addEventListener("timeupdate",stop)}});
+$("mrAdd").onclick=()=>{const t=$("edVid").currentTime||0;mrClips.push({start:t,end:t+8,say:""});mrClips.sort((a,b)=>(b.hook?1:0)-(a.hook?1:0)||a.start-b.start);mrRender()};
+async function mrLoad(){if(!jid)return;try{const r=await(await fetch("/movierecap/"+jid)).json();if(r.clips&&!mrClips.length)mrClips=r.clips;if(r.genre)$("mrGenre").value=r.genre;
+ if(r.info&&(!mrInfo.title||r.info.title===mrInfo.title)){mrInfo=r.info;mrShowInfo()}
+ if(r.running){mrWaiting=true;const pc=Math.max(0,Math.min(99,r.progress||0));mrFlow("writing",null,pc);mrProgShow(pc,r.stage,r.started);clearTimeout(mrT);mrT=setTimeout(mrLoad,1500);$("mrPick").disabled=true;$("mrGo").disabled=true;$("genBtn").disabled=true;return}
+ $("mrPick").disabled=rendering;mrProgShow(r.error?null:100,"");
+ if(window.mrAuto&&!mrClips.length&&!r.error){$("mrMin").value=Math.round(window.mrAuto/60);window.mrAuto=0;mrWrite(true);return}
+ /* v102: the script is written — wait for the user's Subtitles / Blur, the video is made only on Make Movie Recap */
+ const justWritten=mrWaiting;mrWaiting=false;
+ if(!rendering){$("mrGo").disabled=false;$("genBtn").disabled=false}else $("mrPick").disabled=true
+ if(r.error)$("mrMsg").textContent="⚠ "+r.error;else if(r.how)$("mrMsg").textContent=r.how==="gemini"?"✓ AI wrote the script.":"No Gemini key or Gemini busy — evenly spaced scenes were chosen.";mrRender();
+ mrFlow(r.error&&!mrClips.length?"error":mrClips.length?"ready":"empty",r.error);
+ if(justWritten&&mrClips.length){const tb=document.querySelector('#tabs button[data-t="tSub"]');if(tb)tb.click()}}catch(e){}}
+/* v105: script writing shows its own progress (story → watching the film → writing) until the script is finished */
+function mrProgShow(pc,stage,started){const box=$("mrProg");
+ if(pc===null||pc>=100&&!stage){box.classList.add("hide");if(!rendering&&$("stepTxt").textContent===STEP_WRITE){$("stepTxt").textContent="Script ready";$("pct").textContent="100%";$("barI").style.width="100%";$("etaTxt").textContent=""}return}
+ box.classList.remove("hide");$("mrProgI").style.width=pc+"%";
+ const el=started?Math.max(0,Date.now()/1000-started):0,f=x=>{x=Math.round(x);return x>=60?Math.floor(x/60)+"m "+String(x%60).padStart(2,"0")+"s":x+"s"};
+ $("mrMsg").textContent=`⏳ AI is writing the script — ${pc}%`+(stage?` · ${stage}`:"")+(el?` · ${f(el)}`:"");
+ if(rendering)return;
+ $("stepTxt").textContent=STEP_WRITE;$("pct").textContent=pc+"%";$("barI").style.width=pc+"%";$("etaTxt").textContent=el?`Elapsed ${f(el)}`:"";
+ fetch("/status/"+jid).then(x=>x.json()).then(s=>{const lg=$("log"),atEnd=lg.scrollHeight-lg.scrollTop-lg.clientHeight<40;lg.textContent=(s.log||[]).join("\n");if(atEnd)lg.scrollTop=lg.scrollHeight}).catch(()=>{})}
+const STEP_WRITE="Writing the script";
+function mrFlow(state,err,pc){const m=$("mrFlowMsg");$("mrF1").classList.toggle("done",state==="ready");
+ ["mrF2","mrF3","mrF4"].forEach(id=>$(id).disabled=state==="writing");
+ m.className="mrflow-msg "+state;
+ m.textContent=state==="writing"?`⏳ AI is writing the script… ${pc||0}% — Subtitles and Blur open when it is ready.`
+  :state==="ready"?"✓ Script ready. Now set Subtitles and Blur, then press 🎞 Make Movie Recap."
+  :state==="error"?"⚠ "+(err||"The script could not be written")+" — open 1 · AI script to try again."
+  :"Choose the length in 1 · AI script — the AI writes the script first."}
+$("mrFlow").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(!b||b.disabled)return;
+ if(b.dataset.go==="make"){const tb=document.querySelector('#tabs button[data-t="tMovie"]');if(tb)tb.click();requestAnimationFrame(()=>$("mrGo").scrollIntoView({block:"center",behavior:"smooth"}));return}
+ const tb=document.querySelector(`#tabs button[data-t="${b.dataset.go}"]`);if(tb)tb.click()});
+/* v102: choosing the length writes the script; the video waits for Subtitles / Blur and the Make button */
+async function mrWrite(auto){if(!jid||$("mrPick").disabled)return;if(!auto&&mrClips.length&&!await uiConfirm("Replace the current scenes with a new AI recap?"))return;
+ {const t=$("mrName").value.trim();if(t!==(mrInfo.title||""))mrInfo={title:t}}
+ const r=await(await fetch("/movierecap/"+jid+"/pick",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({seconds:mrTarget(),genre:$("mrGenre").value,lang:narrLang(),sub_lang:(window.OL&&OL.sub)||narrLang(),info:mrInfo})})).json();
+ if(r.error)return alert(r.error);mrClips=[];mrRender();mrWaiting=true;mrFlow("writing");$("mrPick").disabled=true;$("mrGo").disabled=true;$("genBtn").disabled=true;mrProgShow(0,"Starting",Date.now()/1000);clearTimeout(mrT);mrT=setTimeout(mrLoad,1500)}
+$("mrPick").onclick=()=>mrWrite(false);
+$("mrGo").onclick=async()=>{if(rendering||$("mrGo").disabled)return;if(!mrClips.length)return alert("Write the recap with AI or add some scenes first");
+ if(mrAud==="mine"&&!isMine(voice))return alert("Choose a My Voice option in the Voice tab first");
+ if(mrAud==="mine"){const why=voiceNotReady();if(why)return alert(why)}
+ const body={look:$("mrLook").checked,film_sound:$("mrFilm").checked,seconds:mrTarget(),clips:mrClips,audio:mrAud,gap_sound:false,music:"none",ratio:mrRatio,lang:narrLang(),sub_lang:(window.OL&&OL.sub)||narrLang(),voice,rate:+$("rate").value,mirror:$("mirror").checked,subtitles:$("subs").checked,blur,
+  sub_style:{box:subBox,font,size:+$("fsize").value,color:$("fcolor").value,bgblur:$("subBlur").checked,bg:bgMode(),bg_color:$("subBgColor").value,bg_opacity:+$("subBgOp").value/100}};
+ setRendering(true);
+ let r;try{r=await(await fetch("/movierecap/"+jid+"/render",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})).json()}catch(e){r={error:e.message}}
+ if(r.error){if(!/already being made/.test(r.error))setRendering(false);return alert(r.error)}resetSplit();$("doneCard").classList.add("hide");setStep(3);$("progCard").classList.remove("hide");poll()};
+
+/* re-translate with Gemini narrator */
+let reTimer=null;
+function reDone(s){const r=s.retr||{};clearInterval(reTimer);reTimer=null;
+ (s.segments||[]).forEach((g,i)=>{const t=document.querySelector(`#segs textarea[data-i="${i}"]`);if(t&&g.my&&t.value!==g.my)t.value=g.my});
+ const first=document.querySelector("#segs textarea");if(first)setPreviewText(first.value);
+ refreshBlankWarn();
+ $("trUsed").textContent=s.translator_used==="gemini"?"Gemini Narrator":"Google Translate (Literal)";
+ $("reMsg").textContent=r.blank?`⚠ ${r.blank} lines remaining — check Log below, click again shortly`:"✓ All done";
+ $("reTr").disabled=false;$("genBtn").disabled=false;$("reTr").textContent="Retranslate with Gemini Narrator"}
+function rePoll(){clearInterval(reTimer);reTimer=setInterval(async()=>{let s;
+ try{s=await(await fetch("/status/"+jid)).json()}catch(e){return}
+ const r=s.retr||{};$("pct").textContent=s.progress+"%";$("barI").style.width=s.progress+"%";$("stepTxt").textContent="Translating";
+ const lg=$("log"),atEnd=lg.scrollHeight-lg.scrollTop-lg.clientHeight<40;lg.textContent=(s.log||[]).join("\n");if(atEnd)lg.scrollTop=lg.scrollHeight;
+ if(r.running){$("reMsg").textContent=`⏳ Translating ${r.done||0}/${r.total||0} — check Log below`;return}
+ reDone(s)},1000)}
+$("reTr").onclick=async()=>{const texts=[...document.querySelectorAll("#segs textarea")].map(t=>t.value);
+ {const why=spkLang!=="orig"&&voiceNotReady();if(why)return alert(why)}
+ const blanks=blankLines().length;
+ if(!blanks&&!await uiConfirm("All lines are finished. Retranslate all from scratch? (Your edits will be lost)"))return;
+ $("reTr").disabled=true;$("genBtn").disabled=true;$("reTr").textContent="⏳ Translating...";
+ $("reMsg").textContent=blanks?`Translating remaining ${blanks} lines...`:"Retranslating all...";
+ try{const res=await fetch("/retranslate/"+jid,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({translator:"gemini",gemini_key:"",texts})});
+  const r=await res.json();if(!res.ok||r.error)throw new Error(r.error||("HTTP "+res.status));rePoll()}
+ catch(e){$("reMsg").textContent="⚠ "+e.message;$("reTr").disabled=false;$("genBtn").disabled=false;$("reTr").textContent="Retranslate with Gemini Narrator"}};
+
+/* output ratio preview: draws what the final video frame will look like */
+const RATIOS={"16:9":[1280,720],"9:16":[720,1280],"1:1":[1080,1080],"4:5":[1080,1350],"4:3":[960,720]};
+function drawRP(){const v=$("edVid"),c=$("rp");if(!c)return;const vw=v.videoWidth||1280,vh=v.videoHeight||720;
+ const [W,H]=RATIOS[ratio]||[vw,vh];const S=Math.min(1,640/Math.max(W,H));c.width=Math.round(W*S);c.height=Math.round(H*S);
+ const x=c.getContext("2d");const sc=Math.min(c.width/vw,c.height/vh),dw=vw*sc,dh=vh*sc,dx=(c.width-dw)/2,dy=(c.height-dh)/2;
+ x.fillStyle="#000";x.fillRect(0,0,c.width,c.height);x.save();
+ if($("mirror").checked){x.translate(c.width,0);x.scale(-1,1)}
+ if(v.readyState>=2)x.drawImage(v,dx,dy,dw,dh);else{x.fillStyle="#333";x.fillRect(dx,dy,dw,dh)}
+ if(blur.enabled&&v.readyState>=2)blur.items.filter(b=>blurActive(b,v.currentTime)).forEach(b=>{x.save();x.beginPath();x.rect(dx+b.x*dw,dy+b.y*dh,b.w*dw,b.h*dh);x.clip();
+  x.filter=`blur(${Math.max(4,dh*.02)}px)`;x.drawImage(v,dx,dy,dw,dh);x.restore()});
+ x.restore();
+ $("rpInfo").textContent=`· ${W}×${H}${$("mirror").checked?" · mirror":""}`;
+ if(!$("subs").checked)return;
+ const bx=dx+subBox.x*dw,by=dy+subBox.y*dh,bw=subBox.w*dw,bh=subBox.h*dh;
+ if(!previewLayout)return;
+ const fs=previewLayout.size*S,lh=previewLayout.line_height*S;
+ const lines=previewLayout.pages[0]||[];
+ x.font=`${font==="padaukb"?700:400} ${fs}px '${FONTS[font][0]}'`;
+ x.textAlign="center";x.textBaseline="middle";x.lineJoin="round";x.lineWidth=Math.max(1,fs*.14);x.strokeStyle="#000";x.fillStyle=$("fcolor").value;
+ const y0=by+bh-lines.length*lh+lh/2;
+ if($("subBlur").checked&&lines.length){x.save();x.filter="blur(8px) brightness(.9)";
+  lines.forEach((l,i)=>{const tw=x.measureText(l).width+fs*.7,yy=y0+i*lh-lh/2;x.save();x.beginPath();x.rect(bx+bw/2-tw/2,yy,tw,lh);x.clip();
+   x.drawImage(x.canvas,0,0);x.restore()});x.restore()}
+ if((bgMode()==="color"||bgMode()==="blurcolor")&&lines.length){x.save();x.fillStyle=bgRGBA();
+  lines.forEach((l,i)=>{const tw=x.measureText(l).width+fs*.7,yy=y0+i*lh-lh/2;x.fillRect(bx+bw/2-tw/2,yy,tw,lh)});x.restore()}
+ lines.forEach((l,i)=>{x.strokeText(l,bx+bw/2,y0+i*lh);x.fillText(l,bx+bw/2,y0+i*lh)})}
+(function loop(){if(!$("tVideo").classList.contains("hide"))drawRP();requestAnimationFrame(loop)})();
+
+/* fonts */
+$("fontList").innerHTML=Object.entries(FONTS).map(([k,[fam,n]])=>`<div class="fc ${k===font?"on":""}" data-f="${k}"><span style="font-family:'${fam}'">Burmese</span><small>${n}</small></div>`).join("");
+$("fontList").onclick=e=>{const c=e.target.closest(".fc");if(!c)return;font=c.dataset.f;
+ $("fontList").querySelectorAll(".fc").forEach(x=>x.classList.toggle("on",x===c));styleSub()};
+$("fsize").oninput=e=>{$("fsizeV").textContent=e.target.value;styleSub()};$("fcolor").oninput=styleSub;$("subBlur").onchange=styleSub;
+const BG_SW=["#000000","#ffffff","#e53935","#fdd835","#1e88e5","#43a047","#8e24aa","#ff6f00"];
+$("subBgSw").innerHTML=BG_SW.map(c=>`<span data-c="${c}" title="${c}" style="display:inline-block;width:18px;height:18px;margin-right:4px;border-radius:3px;cursor:pointer;border:1px solid #555;background:${c}"></span>`).join("");
+$("subBgSw").onclick=e=>{const c=e.target.dataset&&e.target.dataset.c;if(c){$("subBgColor").value=c;styleSub()}};
+function bgMode(){return $("subBg").value}
+function bgRGBA(){const h=$("subBgColor").value,o=+$("subBgOp").value/100;return `rgba(${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)},${o})`}
+$("subBg").onchange=()=>{const m=bgMode();$("subBlur").checked=m==="blur"||m==="blurcolor";$("subBgColorWrap").classList.toggle("hide",!(m==="color"||m==="blurcolor"));styleSub()};
+$("subBgColor").oninput=styleSub;$("subBgOp").oninput=e=>{$("subBgOpV").textContent=e.target.value+"%";styleSub()};
+let previewLayout=null,layoutTimer=null,layoutVersion=0;
+function styleSub(){
+ clearTimeout(layoutTimer);const version=++layoutVersion;
+ layoutTimer=setTimeout(async()=>{
+  const v=$("edVid");const text=$("subTxt").dataset.fullText||$("subTxt").textContent;
+  try{
+   const response=await fetch("/subtitle_layout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text,vw:v.videoWidth||1280,vh:v.videoHeight||720,ratio,style:{box:subBox,font,size:+$("fsize").value,color:$("fcolor").value}})});
+   if(!response.ok)return;const result=await response.json();if(version!==layoutVersion)return;
+   previewLayout=result;const r=vidRect();const vw=v.videoWidth||1280,vh=v.videoHeight||720;
+   const outputScale=Math.min(result.width/vw,result.height/vh);
+   const px=result.size*(r.h/vh)/outputScale;
+   const t=$("subTxt");t.style.fontFamily=`'${FONTS[font][0]}'`;t.style.fontWeight=font==="padaukb"?700:400;
+   t.dataset.fullText=text;t.textContent=(result.pages[0]||[]).join("\n");t.style.whiteSpace="pre";
+   t.style.fontSize=px+"px";t.style.lineHeight="1.45";t.style.color=$("fcolor").value;
+   t.style.webkitTextStroke=Math.max(.5,px*.07)+"px #000";
+   const m=bgMode(),sb=m==="blur"||m==="blurcolor",sc=m==="color"||m==="blurcolor";
+   t.style.backdropFilter=t.style.webkitBackdropFilter=sb?"blur(8px) brightness(.9)":"";
+   t.style.backgroundColor=sc?bgRGBA():"";
+   t.style.padding=(sb||sc)?`${px*.15}px ${px*.35}px`:"";t.style.borderRadius=(sb||sc)?"6px":"";drawRP();
+  }catch(e){console.warn("Subtitle preview unavailable",e.message)}
+ },80);
+}
+function setPreviewText(text){$("subTxt").dataset.fullText=text;$("subTxt").textContent=text;styleSub()}
+document.fonts.ready.then(styleSub);
+
+/* sliders for boxes */
+function sliders(host,obj){const keys=[["x","X"],["y","Y"],["w","Width"],["h","Height"]];
+ $(host).innerHTML=keys.map(([k,l])=>`<div class="sl"><span>${l}</span><input type="range" min="0" max="100" step=".5" data-k="${k}"><output></output></div>`).join("");
+ $(host).addEventListener("input",e=>{const k=e.target.dataset.k;if(!k)return;let v=+e.target.value/100;
+  if(k==="w")v=Math.min(Math.max(v,.05),1-obj.x);if(k==="h")v=Math.min(Math.max(v,.04),1-obj.y);
+  if(k==="x")v=Math.min(v,1-obj.w);if(k==="y")v=Math.min(v,1-obj.h);obj[k]=v;place()})}
+function syncSl(host,obj){$(host).querySelectorAll("input").forEach(i=>{i.value=obj[i.dataset.k]*100;i.nextElementSibling.textContent=Math.round(obj[i.dataset.k]*100)+"%"})}
+sliders("subSl",subBox);sliders("blurSl",{get x(){return selB().x},set x(v){selB().x=v},get y(){return selB().y},set y(v){selB().y=v},
+ get w(){return selB().w},set w(v){selB().w=v},get h(){return selB().h},set h(v){selB().h=v}});
+
+/* overlay geometry: boxes are fractions of the visible picture (object-fit contain) */
+function vidRect(){const v=$("edVid"),W=v.clientWidth,H=v.clientHeight,vw=v.videoWidth||16,vh=v.videoHeight||9;
+ const sc=Math.min(W/vw,H/vh);return{x:(W-vw*sc)/2,y:(H-vh*sc)/2,w:vw*sc,h:vh*sc}}
+function setBox(el,b){const r=vidRect();el.style.left=r.x+b.x*r.w+"px";el.style.top=r.y+b.y*r.h+"px";el.style.width=b.w*r.w+"px";el.style.height=b.h*r.h+"px"}
+function place(){setBox($("subBox"),subBox);syncSl("subSl",subBox);if(selB())syncSl("blurSl",selB());placeBlur();styleSub()}
+/* multiple blur boxes, each with its own time range (original-video seconds) */
+const parseT=s=>{s=String(s||"").trim();if(!s)return null;const p=s.split(":").map(Number);if(p.some(isNaN))return null;return p.reduce((a,b)=>a*60+b,0)};
+const showT=t=>t==null?"":Math.floor(t/60)+":"+(t%60).toFixed(1).padStart(4,"0");
+const blurActive=(b,t)=>b.always||((b.start??0)<=t&&t<=(b.end??1e9));
+function placeBlur(){const L=$("blurLayer");if(!blur.enabled){L.innerHTML="";return}
+ while(L.children.length<blur.items.length){const el=document.createElement("div");el.className="ov ovb";el.innerHTML='<span class="tag"></span><div class="hd"></div>';L.appendChild(el);interactBlur(el)}
+ while(L.children.length>blur.items.length)L.lastChild.remove();
+ const t=$("edVid").currentTime||0;
+ blur.items.forEach((b,i)=>{const el=L.children[i];el.dataset.i=i;setBox(el,b);el.querySelector(".tag").textContent="Blur #"+(i+1);
+  el.classList.toggle("off",!blurActive(b,t));el.classList.toggle("sel",i===selBlur)})}
+function renderBlurList(){$("blurList").innerHTML=blur.items.map((b,i)=>`<div class="bl ${i===selBlur?"on":""}" data-i="${i}">
+ <div class="hdr"><b>Blur #${i+1}</b>${blur.items.length>1?`<button class="ghost" data-act="del">Delete</button>`:""}</div>
+ <label class="alw"><input type="checkbox" data-act="always" ${b.always?"checked":""}> Entire video</label>
+ <div class="${b.always?"hide":""}">
+  <div class="tm"><span>Start</span><input type="text" data-act="start" placeholder="1:23" value="${showT(b.start)}"><button class="ghost" data-act="nowS" title="Current time">⏱</button></div>
+  <div class="tm"><span>End</span><input type="text" data-act="end" placeholder="1:24" value="${showT(b.end)}"><button class="ghost" data-act="nowE" title="Current time">⏱</button></div></div></div>`).join("")}
+function selectBlur(i){selBlur=i;renderBlurList();place()}
+$("blurList").addEventListener("click",e=>{const c=e.target.closest(".bl");if(!c)return;const i=+c.dataset.i,b=blur.items[i],a=e.target.dataset.act;
+ if(a==="del"){blur.items.splice(i,1);selectBlur(Math.min(selBlur,blur.items.length-1));return}
+ if(a==="nowS"||a==="nowE"){const t=Math.round(($("edVid").currentTime||0)*10)/10;b[a==="nowS"?"start":"end"]=t;
+  if(b.start!=null&&b.end!=null&&b.end<=b.start)b[a==="nowS"?"end":"start"]=null}
+ if(e.target.tagName==="INPUT"){if(selBlur!==i){selBlur=i;place()}return}selectBlur(i)});
+$("blurList").addEventListener("change",e=>{const c=e.target.closest(".bl");if(!c)return;const b=blur.items[+c.dataset.i],a=e.target.dataset.act;
+ if(a==="always"){b.always=e.target.checked;if(!b.always&&b.start==null){b.start=Math.round(($("edVid").currentTime||0)*10)/10;b.end=b.start+1}}
+ if(a==="start"||a==="end"){const t=parseT(e.target.value);if(e.target.value.trim()&&t==null){alert("Enter time in 1:23 format");}b[a]=t}
+ selectBlur(+c.dataset.i)});
+$("blurAdd").onclick=()=>{const b=newBlur();const t=Math.round(($("edVid").currentTime||0)*10)/10;b.always=false;b.start=t;b.end=Math.round((t+10)*10)/10;
+ const last=blur.items[blur.items.length-1];if(last){b.x=last.x;b.y=last.y;b.w=last.w;b.h=last.h;
+  b.x=Math.min(last.x+.06,Math.max(0,1-b.w));b.y=Math.min(last.y+.06,Math.max(0,1-b.h));
+  if(Math.abs(b.x-last.x)<.01&&Math.abs(b.y-last.y)<.01){b.x=Math.max(0,last.x-.12);b.y=Math.max(0,last.y-.12)}}
+ blur.items.push(b);selectBlur(blur.items.length-1)};
+$("edVid").addEventListener("timeupdate",placeBlur);$("edVid").addEventListener("seeked",placeBlur);
+function interactBlur(el){el.addEventListener("pointerdown",e=>{const i=+el.dataset.i;if(i!==selBlur){selBlur=i;renderBlurList();syncSl("blurSl",selB())}
+ e.preventDefault();const obj=blur.items[i],resize=e.target.classList.contains("hd");el.setPointerCapture(e.pointerId);const sx=e.clientX,sy=e.clientY,st={...obj},r=vidRect();
+ el.onpointermove=ev=>{const dx=(ev.clientX-sx)/r.w,dy=(ev.clientY-sy)/r.h;
+  if(resize){obj.w=Math.min(Math.max(st.w+dx,.03),1-obj.x);obj.h=Math.min(Math.max(st.h+dy,.03),1-obj.y)}
+  else{obj.x=Math.min(Math.max(st.x+dx,0),1-obj.w);obj.y=Math.min(Math.max(st.y+dy,0),1-obj.h)}place()};
+ el.onpointerup=()=>el.onpointermove=null})}
+window.addEventListener("resize",place);$("edVid").addEventListener("loadedmetadata",place);
+function interact(el,obj){el.addEventListener("pointerdown",e=>{e.preventDefault();const resize=e.target.classList.contains("hd");
+ el.setPointerCapture(e.pointerId);const sx=e.clientX,sy=e.clientY,st={...obj},r=vidRect();
+ el.onpointermove=ev=>{const dx=(ev.clientX-sx)/r.w,dy=(ev.clientY-sy)/r.h;
+  if(resize){obj.w=Math.min(Math.max(st.w+dx,.05),1-obj.x);obj.h=Math.min(Math.max(st.h+dy,.04),1-obj.y)}
+  else{obj.x=Math.min(Math.max(st.x+dx,0),1-obj.w);obj.y=Math.min(Math.max(st.y+dy,0),1-obj.h)}place()};
+ el.onpointerup=()=>el.onpointermove=null})}
+interact($("subBox"),subBox);
+$("blurOn").onchange=e=>{blur.enabled=e.target.checked;$("blurWrap").classList.toggle("hide",!blur.enabled);renderBlurList();place()};
+$("subs").onchange=e=>$("subBox").classList.toggle("hide",!e.target.checked);
+
+function blankLines(){return [...document.querySelectorAll("#segs textarea")].map((t,i)=>({t,i})).filter(x=>!x.t.value.trim()&&x.t.dataset.ns!=="1")}
+function refreshBlankWarn(){const w=$("blankWarn");if(!w)return;
+ /* v105: Original -> Recap never translates the film line by line, so there is nothing "untranslated" to warn about */
+ if(window.feature==="movie"){w.classList.add("hide");document.querySelectorAll("#segs textarea").forEach(t=>t.style.outline="");return}
+ const b=blankLines();
+ document.querySelectorAll("#segs textarea").forEach(t=>t.style.outline=(t.value.trim()||t.dataset.ns==="1")?"":"1px solid #a33");
+ if(b.length){w.classList.remove("hide");w.textContent=`\u26a0 ${b.length} untranslated lines remaining — click 'Retranslate with Gemini Narrator' or type them in yourself`}
+ else w.classList.add("hide")}
+$("genBtn").onclick=async()=>{if(window.feature==="movie")return $("mrGo").click();if(window.feature==="short")return $("shGo").click();const texts=[...document.querySelectorAll("#segs textarea")].map(t=>t.value);
+ {const why=spkLang!=="orig"&&voiceNotReady();if(why)return alert(why)}
+ const blanks=blankLines().length;
+ if(blanks){const first=blankLines()[0];if(first)first.t.scrollIntoView({block:"center",behavior:"smooth"});
+  if(!await uiConfirm(`${blanks} lines are still untranslated. Please retranslate first.\n\nOK = continue and skip those lines. Cancel = go back and retranslate`))return}
+ const body={texts,allow_blank:blanks>0,...voiceOpts(),sub_lang:(window.OL&&OL.sub)||narrLang(),music:"none",ratio,mirror:$("mirror").checked,subtitles:$("subs").checked,blur,
+  sub_style:{box:subBox,font,size:+$("fsize").value,color:$("fcolor").value,bgblur:$("subBlur").checked,bg:bgMode(),bg_color:$("subBgColor").value,bg_opacity:+$("subBgOp").value/100}};
+ const r=await(await fetch("/render/"+jid,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})).json();
+ if(r.error)return alert(r.error);$("genBtn").disabled=true;resetSplit();$("doneCard").classList.add("hide");setStep(3);
+ $("progCard").classList.remove("hide");poll()};
+$("dl").addEventListener("click",e=>{if(window.pywebview&&pywebview.api){e.preventDefault();pywebview.api.save_video(jid,outKind||null).then(r=>{if(r)$("log").textContent+="\nSaved: "+r+"\n"})}});
+$("backBtn").onclick=async()=>{resetSplit();await fetch("/reedit/"+jid,{method:"POST"});$("doneCard").classList.add("hide");setStep(2);0};
+
+/* split finished video into equal parts */
+let splitTimer=null;
+segBtns("splitSel","m",m=>$("splitMin").value=m);
+$("splitYes").onclick=()=>{$("splitPanel").classList.remove("hide");$("splitAsk").classList.add("hide")};
+$("splitNo").onclick=()=>$("splitAsk").classList.add("hide");
+$("splitGo").onclick=async()=>{const minutes=+$("splitMin").value||5;
+ $("splitGo").disabled=true;$("splitMsg").className="muted";$("splitMsg").textContent="⏳ Splitting...";
+ const r=await(await fetch("/split/"+jid,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({minutes,...splitOpt.sp})})).json();
+ if(r.error){$("splitMsg").className="err";$("splitMsg").textContent="⚠ "+r.error;$("splitGo").disabled=false;return}
+ clearInterval(splitTimer);splitTimer=setInterval(async()=>{const s=await(await fetch("/status/"+jid)).json();const sp=s.split||{};
+  if(sp.step==="split")$("splitMsg").textContent=`⏳ Splitting... ${sp.progress||0}%`;
+  if(sp.error){clearInterval(splitTimer);$("splitMsg").className="err";$("splitMsg").textContent="⚠ "+sp.error;$("splitGo").disabled=false}
+  if(sp.done){clearInterval(splitTimer);$("splitGo").disabled=false;$("splitMsg").className="ok";$("splitMsg").textContent=`✓ Got ${sp.parts.length} parts`;
+   $("splitList").innerHTML=sp.parts.map(partRow).join("")}}
+ ,800)};
+function resetSplit(){clearInterval(splitTimer);$("splitPanel").classList.add("hide");$("splitAsk").classList.remove("hide");$("splitList").innerHTML="";$("splitMsg").textContent="";$("splitGo").disabled=false}
+loadVoices();
+/* source language */
+fetch("/langs").then(r=>r.json()).then(ls=>{$("langSel").innerHTML=ls.map(l=>`<option value="${l.id}">${esc(l.label)}</option>`).join("");$("langSel").value="en"});
+/* back to the start screen (fresh state) */
+async function goHome(){if(jid&&!await uiConfirm("Leave current job and start over? (Files will remain in Storage)"))return;location.href="/"}
+$("homeBtn").onclick=goHome;$("doneHome").onclick=()=>location.href="/";$("splitHome").onclick=()=>location.href="/";
+/* storage manager */
+const fsz=b=>b>1073741824?(b/1073741824).toFixed(2)+" GB":b>1048576?(b/1048576).toFixed(1)+" MB":Math.round(b/1024)+" KB";
+async function loadJobs(){const r=await(await fetch("/jobs")).json();$("storTotal").textContent="Total "+fsz(r.total);$("storAll").checked=false;
+ $("storList").innerHTML=r.jobs.length?r.jobs.map(j=>{const what=j.voice_test?"Voice test files":[j.final?"Recap video":"",j.parts?`${j.parts} split parts`:"",!j.final&&!j.parts?"Incomplete job":""].filter(Boolean).join(" · ");
+  const acts=j.voice_test?"":`<span class="jacts">${j.resume?`<button class="ghost" data-act="open" data-id="${j.id}" title="Continue with translated text">📂 Reopen</button>`:""}${j.final?`<button class="ghost" data-act="dl" data-id="${j.id}" title="Save Recap video">📥 Download</button>`:""}</span>`;
+  return `<div class="jrow"><label class="${j.busy||j.id===jid?"dis":""}"><input type="checkbox" value="${j.id}" ${j.busy||j.id===jid?"disabled":""}><span><b>${esc(j.id)}</b> <span class="muted">${new Date(j.time*1000).toLocaleString()}</span><br><span class="muted">${what}${j.busy?" · Processing":j.id===jid?" · Current video":""}</span></span><span class="sz">${fsz(j.size)}</span></label>${acts}</div>`}).join(""):'<p class="muted" style="padding:10px">No files</p>';
+  updDel()}
+async function reopenJob(id){$("storMsg").textContent="⏳ Reopening...";
+ try{const r=await(await fetch("/jobs/reopen/"+id,{method:"POST"})).json();
+  if(r.error){$("storMsg").textContent="⚠ "+r.error;return}
+  $("storModal").classList.add("hide");jid=r.id;$("startView").classList.add("hide");
+  const s=await(await fetch("/status/"+jid)).json();showEdit(s);poll();
+ }catch(e){$("storMsg").textContent="⚠ "+e.message}}
+function storSave(id){if(window.pywebview&&pywebview.api){pywebview.api.save_video(id).then(r=>{if(r)$("log").textContent+="\nSaved: "+r+"\n"});return}
+ const a=document.createElement("a");a.href="/download/"+id;a.download="recap_"+id+".mp4";document.body.appendChild(a);a.click();a.remove()}
+$("storList").addEventListener("click",e=>{const b=e.target.closest("button[data-act]");if(!b)return;
+ if(b.dataset.act==="open")reopenJob(b.dataset.id);else storSave(b.dataset.id)});
+function updDel(){const n=$("storList").querySelectorAll("input:checked").length;$("storDel").disabled=!n;$("storDel").textContent=n?`Delete ${n} selected`:"Delete selected"}
+$("storList").addEventListener("change",updDel);
+$("storAll").onchange=e=>{$("storList").querySelectorAll("input:not(:disabled)").forEach(c=>c.checked=e.target.checked);updDel()};
+$("storBtn").onclick=()=>{$("storModal").classList.remove("hide");$("storMsg").textContent="";loadJobs()};
+/* Gemini API key (saved in .env next to the app) */
+async function keyInfo(){const c=await(await fetch("/config")).json();$("keyNow").textContent=c.env_key?"Current key: "+c.key_hint+" ✓":"No key added yet";return c}
+function openKey(){$("keyModal").classList.remove("hide");$("keyMsg").textContent="";$("keyIn").value="";$("keySave").disabled=true;keyInfo();setTimeout(()=>$("keyIn").focus(),50)}
+$("keyBtn").onclick=openKey;$("keyClose").onclick=()=>$("keyModal").classList.add("hide");
+$("keyIn").oninput=()=>$("keySave").disabled=!$("keyIn").value.trim();
+$("keyShow").onchange=e=>$("keyIn").type=e.target.checked?"text":"password";
+$("keySave").onclick=async()=>{const r=await fetch("/apikey",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({key:$("keyIn").value})});const j=await r.json();
+ if(!r.ok){$("keyMsg").style.color="var(--bad)";$("keyMsg").textContent=j.error;return}
+ $("keyMsg").style.color="var(--ok)";$("keyMsg").textContent="✓ Saved";$("keyIn").value="";$("keySave").disabled=true;keyInfo();setTimeout(()=>$("keyModal").classList.add("hide"),900)};
+keyInfo().then(c=>{if(!c.env_key)openKey()});
+$("storClose").onclick=()=>$("storModal").classList.add("hide");
+$("storModal").onclick=e=>{if(e.target.id==="storModal")$("storModal").classList.add("hide")};
+$("storDel").onclick=async()=>{const ids=[...$("storList").querySelectorAll("input:checked")].map(c=>c.value);
+ if(!await uiConfirm(`Are you sure you want to permanently delete ${ids.length} items?`))return;
+ const r=await(await fetch("/jobs/delete",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ids})})).json();
+ $("storMsg").textContent=`✓ Deleted ${r.deleted.length} items`+(r.skipped.length?` · Failed to delete ${r.skipped.length} items`:"");loadJobs()};
+
+</script><script src="/reference-assets/references.js"></script><script src="/news-assets/news.js"></script><script src="/horror-assets/horror.js"></script>
+<script>
+/* v83: a preview never keeps playing where you cannot see it (movie recap, short video, news, references).
+   It pauses when you go to another step / tab / window (News, References, Download, Storage…), when the
+   player is hidden, and when you switch to another program or minimise the app. */
+(()=>{
+ const media=()=>[...document.querySelectorAll("video,audio")];
+ const zi=m=>{const z=parseInt(getComputedStyle(m).zIndex,10);return isNaN(z)?0:z};
+ function topModal(){let top=null;document.querySelectorAll(".modal").forEach(m=>{if(m.classList.contains("hide")||getComputedStyle(m).display==="none")return;if(!top||zi(m)>=zi(top))top=m});return top}
+ function shown(v){if(!v.isConnected||v.closest(".hide"))return false;if(document.fullscreenElement&&(document.fullscreenElement===v||document.fullscreenElement.contains(v)))return true;
+  if(v.offsetParent===null&&getComputedStyle(v).position!=="fixed")return false;const t=topModal();return !t||t.contains(v)}
+ function check(){for(const v of media())if(!v.paused&&!shown(v))v.pause()}
+ function pauseAll(){for(const v of media())if(!v.paused)v.pause()}
+ window.pauseAllMedia=pauseAll;
+ document.addEventListener("visibilitychange",()=>{if(document.hidden)pauseAll()});
+ window.addEventListener("pagehide",pauseAll);
+ window.addEventListener("blur",()=>setTimeout(()=>{const a=document.activeElement;if(a&&a.tagName==="IFRAME")return;if(!document.hasFocus())pauseAll()},150));
+ // another inspector tab (Subtitles / Blur / Voice / Video / Texts / Short video) is another place too
+ document.addEventListener("click",e=>{const b=e.target.closest("#tabs button");if(b&&!b.classList.contains("on"))pauseAll();setTimeout(check,0)},true);
+ new MutationObserver(()=>check()).observe(document.body,{subtree:true,attributes:true,attributeFilter:["class","style","hidden"],childList:true});
+ document.addEventListener("play",e=>{setTimeout(()=>{const v=e.target;if(v&&!v.paused&&!shown(v))v.pause()},0)},true);
+})();
+</script><script>
+/* v106: background music removed from Recap -> Recap and Original -> Recap (user request) */
+</script>
+<script>
+/* v103: language step — the narrator's language and the subtitle language are chosen first, then the feature opens */
+(function(){const $$=id=>document.getElementById(id),hp=$$("homePick"),lp=$$("langPick");
+ const names={recap:"· Recap → Recap",short:"· Long → Short",movie:"· Original → Recap",split:"· Split Video"};
+ const TITLES={recap:"Recap → Recap",short:"Long → Short",movie:"Original → Recap",news:"News Studio",horror:"Horror Stories"};
+ let LIST=[],pending=null;
+ const saved=(()=>{try{return JSON.parse(localStorage.outLangV103||"{}")}catch(e){return {}}})();
+ window.OL={voice:saved.voice||"my",sub:saved.sub||saved.voice||"my",list:[],
+  name:c=>{const x=LIST.find(l=>l.id===c);return x?x.name.replace(/ \(.*\)$/,""):c==="my"?"Burmese":c},
+  sample:c=>{const x=LIST.find(l=>l.id===c);return x&&x.sample},
+  cps:c=>({my:10,en:14,zh:4.4,ja:7,ko:6,th:12,lo:10,km:10}[c]||13)};
+ const esc3=t=>String(t||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+ function chip(){const v=OL.voice,sb=OL.sub;$$("lpChipV").textContent=OL.name(v);$$("lpChipS").textContent=sb==="none"?"No subtitles":OL.name(sb);
+  $$("lpNow").textContent="🗣 "+OL.name(v)+" · 💬 "+(sb==="none"?"no subtitles":OL.name(sb));
+  const ft=$$("featTag");if(window.feature&&window.feature!=="split")ft.textContent=(names[window.feature]||"")+" · 🗣 "+OL.name(v)+(sb!==v?" · 💬 "+(sb==="none"?"no subs":OL.name(sb)):"");
+  if(window.applyOutLangUi)window.applyOutLangUi()}
+ function grids(){$$("lpVoice").innerHTML=LIST.map(l=>`<button data-v="${l.id}" class="${l.id===OL.voice?"on":""}"><b>${esc3(l.native)}</b><small>${esc3(l.name)}</small></button>`).join("");
+  $$("lpSubs").innerHTML=`<button data-s="same" class="${OL.sub===OL.voice?"on":""}"><b>Same as narrator</b><small>${esc3(OL.name(OL.voice))}</small></button>`+
+   LIST.filter(l=>l.id!==OL.voice).map(l=>`<button data-s="${l.id}" class="${l.id===OL.sub?"on":""}"><b>${esc3(l.native)}</b><small>${esc3(l.name)}</small></button>`).join("")+
+   `<button data-s="none" class="none ${OL.sub==="none"?"on":""}"><b>No subtitles</b><small>Only the voice</small></button>`}
+ fetch("/outlangs").then(r=>r.json()).then(d=>{LIST=d.langs||[];OL.list=LIST;if(!LIST.find(l=>l.id===OL.voice))OL.voice="my";grids();chip()}).catch(()=>{});
+ $$("lpVoice").addEventListener("click",e=>{const b=e.target.closest("[data-v]");if(!b)return;const was=OL.voice;OL.voice=b.dataset.v;
+  if(OL.sub===was||OL.sub===OL.voice)OL.sub=OL.voice;grids();chip()});
+ $$("lpSubs").addEventListener("click",e=>{const b=e.target.closest("[data-s]");if(!b)return;OL.sub=b.dataset.s==="same"?OL.voice:b.dataset.s;grids();chip()});
+ function openLang(f,back){if(f==="split"){applyFeature("split");return}pending=f;$$("lpSub").textContent=(TITLES[f]?TITLES[f]+" — ":"")+"first choose the narrator's language and the subtitles, then continue.";
+  grids();chip();lp.classList.remove("hide");lp.dataset.back=back||"home"}
+ window.pickLang=openLang;
+ $$("lpBack").onclick=()=>{lp.classList.add("hide");if(lp.dataset.back==="home"&&!jid){hp.classList.remove("hide");window.feature=null;$$("featTag").textContent=""}};
+ $$("lpGo").onclick=()=>{try{localStorage.outLangV103=JSON.stringify({voice:OL.voice,sub:OL.sub})}catch(e){}
+  lp.classList.add("hide");const f=pending;pending=null;chip();
+  if(f==="news"){if(window.newsSetLang)window.newsSetLang(OL.voice,OL.sub);$$("newsBtn").click();return}
+  if(f==="horror"){if(window.horrorSetLang)window.horrorSetLang(OL.voice,OL.sub);$$("horrorBtn").click();return}
+  if(f)applyFeature(f)};
+ $$("lpChange").onclick=()=>{if(window.feature==="split")return;if(jid)return alert("The languages are fixed once a video is uploaded. Start a new video to change them.");openLang(window.feature,"upload")};
+ window.feature=null;
+ hp.addEventListener("click",e=>{const b=e.target.closest(".fcard");if(!b)return;const f=b.dataset.f;
+  if(f==="split"){applyFeature("split");return}
+  hp.classList.add("hide");openLang(f,"home")});
+ /* split is its own feature now: upload -> parts (no voice, no language) */
+ function applyFeature(f){
+  window.feature=f;hp.classList.add("hide");lp.classList.add("hide");$$("featTag").textContent=names[f]||"";
+  const want=f==="split"?"split":"recap",mb=document.querySelector(`#modeSel button[data-v="${want}"]`);if(mb&&!mb.classList.contains("on"))mb.click();
+  $$("modeRow").classList.add("hide");$$("lpChip").classList.toggle("hide",f==="split");
+  const ul=$$("upLenRow");if(ul)ul.classList.toggle("hide",f!=="movie");
+  const gb=$$("genBtn");if(gb)gb.textContent=f==="movie"?"🎞 Make Movie Recap":f==="short"?"🎬 Make Short Video":"Generate Video";
+  const up=$$("upBtn");if(up)up.textContent=f==="split"?"✂ Start Split Video":f==="short"?"▶ Start Long → Short":f==="movie"?"▶ Start Original → Recap":"▶ Start Movie Recap";
+  if(f!=="split")chip()}
+ window.switchFeature=f=>{if(f==="split"){applyFeature("split");return}hp.classList.add("hide");openLang(f,"home")};
+ window.goHome=()=>{lp.classList.add("hide");hp.classList.remove("hide");window.feature=null;$$("featTag").textContent=""};
+ // reopening a saved job skips the pickers
+ const obs=new MutationObserver(()=>{if(!$$("editView").classList.contains("hide")){hp.classList.add("hide");lp.classList.add("hide")}});
+ obs.observe($$("editView"),{attributes:true,attributeFilter:["class"]});
+})();
+</script>
+<script src="/studio-assets/studio.js"></script><script src="/studio-assets/publish.js"></script>
+</body></html>

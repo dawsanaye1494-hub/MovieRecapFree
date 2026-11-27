@@ -1,0 +1,201 @@
+/* 👻 Horror Stories (v87) — UI for horror.py */
+(()=>{
+ const el=id=>document.getElementById(id);
+ async function api(path,body,method){const o=body===undefined?{method:method||'GET'}:{method:method||'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)};
+  const r=await fetch(path,o);let j={};try{j=await r.json()}catch(e){throw new Error('The app answered with an error ('+r.status+')')}if(!r.ok||j.error)throw new Error(j.error||'Request failed');return j}
+ async function upload(path,files){const f=new FormData();for(const x of files)f.append('file',x);const r=await fetch(path,{method:'POST',body:f});let j={};try{j=await r.json()}catch(e){throw new Error('Upload failed ('+r.status+')')}if(!r.ok||j.error)throw new Error(j.error||'Upload failed');return j}
+ const msg=(s,bad)=>{el('hrMsg').className=bad?'err':'muted';el('hrMsg').textContent=s};
+ const fmtS=s=>{s=Math.round(s||0);return s>=60?Math.floor(s/60)+' min '+String(s%60).padStart(2,'0')+' s':s+' s'};
+ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ let META=null,P=null,step='story',mode='mine',saveT=null,saving=null,poll=null,minSel=3;
+ const MOOD_NAME={normal:'Normal',whisper:'Whisper',scared:'Scared',scream:'Scream',sad:'Sad',angry:'Angry',ghost:'Ghost voice',
+ laugh:'Laughing',nervous_laugh:'Nervous laugh',evil_laugh:'Evil laugh',mocking:'Mocking / teasing',surprised:'Surprised / shocked',happy:'Happy',excited:'Excited',relieved:'Relieved',tender:'Loving / gentle',
+ nervous:'Nervous / worried',pleading:'Begging',crying:'Crying hard',panting:'Out of breath',shiver:'Shivering (cold)',pain:'In pain',weak:'Weak / dying',sleepy:'Sleepy',confused:'Confused',suspicious:'Suspicious',
+ cold:'Cold & creepy calm',shout:'Shouting (warning)',calling:'Calling from far',possessed:'Possessed (two voices)',ghost_whisper:'Ghost whisper',child_ghost:'Ghost child'};
+// v108: the "How it is said" menu in groups
+const MOOD_GROUPS=[['Calm',['normal','whisper','tender','confused','suspicious','sleepy']],['Happy',['laugh','happy','excited','relieved','mocking']],
+ ['Fear & shock',['scared','nervous','nervous_laugh','surprised','scream','shout','calling','panting','shiver','pleading']],['Pain & sadness',['sad','crying','pain','weak']],
+ ['Anger & evil',['angry','cold','evil_laugh']],['Ghosts',['ghost','ghost_whisper','possessed','child_ghost']]];
+function moodOpt(sel,v){sel.replaceChildren();const have=new Set(META.voice_moods),used=new Set();
+ for(const [g,ms] of MOOD_GROUPS){const og=document.createElement('optgroup');og.label=g;for(const m of ms){if(!have.has(m))continue;used.add(m);const o=document.createElement('option');o.value=m;o.textContent=MOOD_NAME[m]||m;og.append(o)}if(og.children.length)sel.append(og)}
+ for(const m of META.voice_moods){if(used.has(m))continue;const o=document.createElement('option');o.value=m;o.textContent=MOOD_NAME[m]||m;sel.append(o)}sel.value=v}
+
+ function mark(box,v){box.querySelectorAll('button').forEach(b=>b.classList.toggle('on',String(b.dataset.v)===String(v)))}
+ function seg(id,cb){const box=el(id);if(box.dataset.bound)return;box.dataset.bound=1;box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!box.contains(b))return;mark(box,b.dataset.v);cb(b.dataset.v)})}
+
+ /* ---------- open / close / projects ---------- */
+ async function open(){el('horrorModal').classList.remove('hide');
+  try{if(!META){META=await api('/horror/meta');buildStatic()}else{const m=await api('/horror/meta');META.has_key=m.has_key;META.voice_keys=m.voice_keys}keysLoaded=false;
+   el('hrKey').textContent=META.has_key?'Gemini key ✓':'No Gemini key yet — click 🔑 API Key at the top (free from aistudio.google.com)';
+   await loadProjects();if(!P){const items=(await api('/horror/projects')).items;if(items.length)await openProject(items[0].id);else await newProject()}
+   /* v103: the language step chose the story / subtitle language: a story already written in another language stays as it is */
+   if(pendLang&&P){if(P.lang!==pendLang.v&&((P.lines||[]).length||(P.raw||'').trim()))await newProject();
+    P.lang=pendLang.v;P.video.sub_lang=pendLang.sub;P.video.subtitles=pendLang.sub!=='none';pendLang=null;fill();later()}}catch(e){msg(e.message,true)}}
+ let pendLang=null;
+ window.horrorSetLang=(v,sub)=>{pendLang={v,sub:sub===v?'':sub}};
+ const LANGS=()=>(window.OL&&OL.list&&OL.list.length?OL.list:[{id:'my',name:'Burmese',native:'မြန်မာ'},{id:'en',name:'English',native:'English'}]);
+ function langSelects(){const a=el('hrLangSel'),b=el('hrSubLang');if(a.options.length)return;
+  const lab=l=>l.native+(l.native!==l.name?' · '+l.name:'');
+  for(const l of LANGS()){const o=document.createElement('option');o.value=l.id;o.textContent=lab(l);a.append(o)}
+  const s0=document.createElement('option');s0.value='';s0.textContent='Same as the story';b.append(s0);
+  for(const l of LANGS()){const o=document.createElement('option');o.value=l.id;o.textContent=lab(l);b.append(o)}
+  a.onchange=()=>{P.lang=a.value;later();lines()};b.onchange=()=>{P.video.sub_lang=b.value;later()}}
+ el('horrorBtn').onclick=open;
+ el('hrClose').onclick=async()=>{await flush();el('hrVid').pause();el('hrAud').pause();el('hrMAud').pause();el('horrorModal').classList.add('hide')};
+ async function loadProjects(){const items=(await api('/horror/projects')).items;const s=el('hrProjects');s.replaceChildren();
+  for(const it of items){const o=document.createElement('option');o.value=it.id;o.textContent=(it.done?'🎬 ':'')+it.title+' · '+it.lines+' lines';s.append(o)}
+  if(P)s.value=P.id}
+ el('hrProjects').onchange=async()=>{await flush();await openProject(el('hrProjects').value)};
+ async function newProject(){await flush();P=await api('/horror/projects',{});await loadProjects();fill();go('story');msg('New story — paste your script or let Gemini write one.')}
+ el('hrNew').onclick=()=>newProject().catch(e=>msg(e.message,true));
+ el('hrDel').onclick=async()=>{if(!P||!await uiConfirm('Delete this story and its video?'))return;try{await api('/horror/p/'+P.id,undefined,'DELETE');P=null;await loadProjects();const v=el('hrProjects').value;if(v)await openProject(v);else await newProject()}catch(e){msg(e.message,true)}};
+ async function openProject(id){P=await api('/horror/p/'+id);el('hrProjects').value=id;fill();if(P.busy)watch();msg((P.title||'Untitled story')+' · '+P.lines.length+' lines · about '+fmtS(P.estimate))}
+
+ /* ---------- static parts ---------- */
+ function buildStatic(){
+  const mb=el('hrMin');mb.replaceChildren();for(const m of META.minutes){const b=document.createElement('button');b.dataset.v=m;b.textContent=m+' min';mb.append(b)}
+  seg('hrMin',v=>{minSel=+v;el('hrMinX').value='';P.minutes=minSel;later()});
+  el('hrMinX').oninput=()=>{const v=parseFloat(el('hrMinX').value);if(v>=0.5&&v<=META.max_minutes){minSel=v;mark(el('hrMin'),'x');P.minutes=v;later()}};
+  const box=el('hrMoods');box.replaceChildren();
+  const card=(id,name,about,preview)=>{const c=document.createElement('div');c.className='hrmood';c.dataset.v=id;c.innerHTML=`<b>${esc(name)}</b><small>${esc(about)}</small>`;
+   if(preview){const b=document.createElement('button');b.className='ghost';b.textContent='▶ Listen';b.onclick=e=>{e.stopPropagation();play('/horror/music/'+id,'hrMAud')};c.append(b)}
+   c.onclick=()=>{if(id==='file'&&!P.music.file){el('hrMusicF').click();return}P.music.mood=id;moods();later()};box.append(c)};
+  for(const m of META.moods)card(m.id,m.name,m.about,true);
+  card('none','No music','Only the voice and the effects.',false);card('file','My music file','Use a music file of your own (upload it below).',false);
+  const sl=el('hrSfxList');sl.replaceChildren();for(const s of META.sfx){if(s.id==='none')continue;const b=document.createElement('button');b.className='ghost';b.textContent='▶ '+s.name;b.onclick=()=>play('/horror/sfx/'+s.id,'hrMAud');sl.append(b)}
+  langSelects();seg('hrMode',v=>{mode=v;modeUi()});
+  seg('hrNarr',v=>{P.voice.narrator=v;later()});seg('hrActing',v=>{P.voice.acting=v;actUi();lines();later()});
+  for(const [id,g,k] of [['hrGirlV','f','girl'],['hrBoyV','m','boy']]){const s=el(id);s.replaceChildren();const o=document.createElement('option');o.value='auto';o.textContent='Auto (own voice per character)';s.append(o);
+   for(const v of (META.acted_voices||{})[g]||[]){const x=document.createElement('option');x.value=v;x.textContent=v+' · '+((META.voice_label||{})[v]||'');s.append(x)}
+   s.onchange=()=>{P.voice[k]=s.value;later()}}
+  el('hrNarrAct').onchange=()=>{P.voice.narr_acted=el('hrNarrAct').checked;lines();later()};seg('hrStyle',v=>{P.voice.style=v;later()});seg('hrRatio',v=>{P.video.ratio=v;later()});
+  slider('hrStr','hrStrV',v=>{P.voice.strength=v/100},v=>v+'%');slider('hrRate','hrRateV',v=>{P.voice.rate=v;est()},v=>(v>0?'+':'')+v+'%');
+  slider('hrMVol','hrMVolV',v=>{P.music.vol=v/100},v=>v+'%');slider('hrSize','hrSizeV',v=>{P.video.size=v},v=>v?v+' px':'auto');
+  el('hrSfx').onchange=()=>{P.music.sfx=el('hrSfx').checked;el('hrAuto').disabled=!P.music.sfx;later();est()};el('hrAuto').onchange=()=>{P.music.auto=el('hrAuto').checked;later()};
+  for(const [id,k] of [['hrSubs','subtitles'],['hrTitleC','title_card'],['hrFlick','flicker'],['hrGrain','grain']])el(id).onchange=()=>{P.video[k]=el(id).checked;later()};
+  el('hrFont').onchange=()=>{P.video.font=el('hrFont').value;later()};
+  el('hrTitle').oninput=()=>{P.title=el('hrTitle').value;later()};el('hrIdea').oninput=()=>{P.idea=el('hrIdea').value;later()};
+  el('hrSetting').oninput=()=>{P.setting=el('hrSetting').value;later()};el('hrRaw').oninput=()=>{P.raw=el('hrRaw').value;rawN();later()};
+ }
+ function slider(id,out,cb,f){const s=el(id);s.oninput=()=>{const v=+s.value;el(out).textContent=f(v);cb(v);later()}}
+ function setSlider(id,out,v,f){el(id).value=v;el(out).textContent=f(+v)}
+ function modeUi(){el('hrMine').classList.toggle('hide',mode!=='mine');el('hrGem').classList.toggle('hide',mode!=='gemini')}
+ function rawN(){const n=el('hrRaw').value.length;el('hrRawN').textContent=n?n+' characters':''}
+ function play(src,id){const a=el(id);a.classList.remove('hide');a.src=src;a.play().catch(()=>{})}
+
+ /* ---------- fill the form from P ---------- */
+ function fill(){if(!P)return;
+  el('hrTitle').value=P.title||'';langSelects();el('hrLangSel').value=P.lang;el('hrSubLang').value=P.video.sub_lang||'';el('hrRaw').value=P.raw||'';rawN();el('hrIdea').value=P.idea||'';el('hrSetting').value=P.setting||'';
+  minSel=P.minutes||3;if(META.minutes.includes(minSel)){mark(el('hrMin'),minSel);el('hrMinX').value=''}else{mark(el('hrMin'),'x');el('hrMinX').value=minSel}
+  mark(el('hrNarr'),P.voice.narrator);mark(el('hrStyle'),P.voice.style);actUi();
+  setSlider('hrStr','hrStrV',Math.round(P.voice.strength*100),v=>v+'%');setSlider('hrRate','hrRateV',P.voice.rate,v=>(v>0?'+':'')+v+'%');
+  setSlider('hrMVol','hrMVolV',Math.round(P.music.vol*100),v=>v+'%');el('hrSfx').checked=P.music.sfx;el('hrAuto').checked=P.music.auto!==false;el('hrAuto').disabled=!P.music.sfx;
+  el('hrMusicN').textContent=P.music.file?('Your file: '+(P.music.file_name||P.music.file)):'';
+  mark(el('hrRatio'),P.video.ratio);el('hrSubs').checked=P.video.subtitles;el('hrTitleC').checked=P.video.title_card;el('hrFlick').checked=P.video.flicker;el('hrGrain').checked=P.video.grain;
+  el('hrFont').value=P.video.font;setSlider('hrSize','hrSizeV',P.video.size,v=>v?v+' px':'auto');
+  mode=P.lines.length||P.raw?'mine':(P.idea?'gemini':mode);mark(el('hrMode'),mode);modeUi();
+  moods();lines();pics();doneUi();el('hrWLog').classList.add('hide');el('hrRLog').textContent='';el('hrBar').style.width='0'}
+ function actUi(){const v=P.voice,on=v.acting!=='basic';mark(el('hrActing'),on?'acted':'basic');el('hrActRow').classList.toggle('hide',!on);
+  el('hrGirlV').value=v.girl||'auto';el('hrBoyV').value=v.boy||'auto';el('hrNarrAct').checked=!!v.narr_acted;
+  el('hrActNote').className=on&&!META.voice_keys?'err':'nwsmall';
+  el('hrActNote').textContent=!on?'Basic voice: Microsoft voices with breath and tremble added. Works without a Gemini key.':
+   META.voice_keys?'Acted voices really whisper with breath, tremble and stammer when scared, cry, and scream — like an actor, not a reading voice. Made by Gemini speech with your free key'+(META.voice_keys>1?'s ('+META.voice_keys+' keys)':'')+'; every character gets their own voice, and the whole story keeps the same voices. If today\'s free limit runs out on every key, the video stops and keeps the finished lines — press Make video again later or add another key below.':
+   'Acted voices need your free Gemini key — click 🔑 API Key at the top (or add one below). Until then the basic voice is used.';
+  keysUi()}
+ /* ---------- extra Gemini keys (acted voices only) ---------- */
+ function keysShow(k){META.voice_keys=k.count;el('hrKeyN').textContent='· '+k.count+' key'+(k.count===1?'':'s')+' in use';
+  const box=el('hrKeyList');box.replaceChildren();
+  const row=(t,rm)=>{const d=document.createElement('div');d.className='nwrow';d.style.gap='6px';const s=document.createElement('span');s.textContent=t;d.append(s);
+   if(rm!==undefined){const b=document.createElement('button');b.className='ghost';b.textContent='✕';b.title='Remove this key';b.onclick=async()=>{try{keysShow(await api('/horror/keys',{remove:rm}));actUi()}catch(e){msg(e.message,true)}};d.append(b)}box.append(d)};
+  row(k.main?'1. '+k.main+' — main key (🔑 API Key at the top)':'No main key yet (🔑 API Key at the top)');
+  k.extra.forEach((h,i)=>row((i+(k.main?2:1))+'. '+h,i))}
+ let keysLoaded=false;
+ async function keysUi(){if(keysLoaded)return;keysLoaded=true;try{keysShow(await api('/horror/keys'))}catch(e){keysLoaded=false}}
+ el('hrKeySave').onclick=async()=>{const t=el('hrKeyAdd').value.trim();if(!t){msg('Paste a Gemini key first',true);return}
+  try{const k=await api('/horror/keys',{add:t});el('hrKeyAdd').value='';keysShow(k);actUi();msg('Keys saved · '+k.count+' keys for acted voices')}catch(e){msg(e.message,true)}};
+ el('hrKeyCheck').onclick=async()=>{msg('Checking keys…');try{const r=await api('/horror/keys/check',{});
+  const bad=r.items.filter(x=>!x.ok).length;msg(r.items.map((x,i)=>(i+1)+'. '+x.hint+': '+x.msg).join(' · ')||'No keys yet',bad>0)}catch(e){msg(e.message,true)}};
+ function moods(){el('hrMoods').querySelectorAll('.hrmood').forEach(c=>c.classList.toggle('on',c.dataset.v===P.music.mood))}
+ function est(){if(!P)return;const cps=({my:9,en:13}[P.lang]||((window.OL&&OL.cps(P.lang))||10)*0.72)*(1+P.voice.rate/100);
+  const lead={thunder:1.3,creak:1,knock:1.5,footsteps:1.8,heartbeat:1.9,whisper:.9,stinger:.7,bell:1.6,wind:1.6,slam:.8};
+  const s=3.2+3.5+P.lines.reduce((a,x)=>a+x.text.replace(/ /g,'').length/cps+(+x.pause||0)+(P.music.sfx?(lead[x.sfx]||0):0),0);
+  el('hrEst').textContent=P.lines.length?`· ${P.lines.length} lines · about ${fmtS(s)}`:'';el('hrSum').textContent=P.lines.length?`${P.lines.length} lines · about ${fmtS(s)} · ${P.images.length} pictures`:'Write the story first'}
+
+ /* ---------- lines ---------- */
+ const ROLE_OPT=[['narrator','🎙 Narrator'],['female','👧 Girl / woman voice'],['male','👦 Boy / man voice']];
+ function opt(sel,list,v){sel.replaceChildren();for(const [k,t] of list){const o=document.createElement('option');o.value=k;o.textContent=t;sel.append(o)}sel.value=v}
+ function lines(){const box=el('hrLines');box.replaceChildren();
+  if(!P.lines.length){box.innerHTML='<p class="muted">No lines yet — go to the Story step and read your script or let Gemini write one.</p>';est();return}
+  const pics=[['','Auto']].concat(P.images.map((m,i)=>[m.id,'Picture '+(i+1)]));
+  P.lines.forEach((x,i)=>{const r=document.createElement('div');r.className='hrln '+(x.role==='narrator'?'n':x.role==='female'?'f':'m')+(x.guess?' guess':'');
+   r.innerHTML=`<b>${i+1}${x.guess?' ?':''}</b><input class="w" type="text"><select class="r"></select><select class="mo"></select><select class="sx"></select><input class="pa" type="number" min="0" max="4" step="0.1"><select class="im"></select><div class="tx"><textarea class="t" rows="2"></textarea><input class="ac" type="text" maxlength="120" placeholder="How it is said (optional) — e.g. terrified whisper, hiding"></div><div class="bt"><button class="ghost pl" title="Listen to this line">▶</button><button class="ghost ad" title="Add a line after this one">＋</button><button class="ghost dl" title="Delete this line">✕</button></div>`;
+   const q=s=>r.querySelector(s);q('.w').value=x.who;q('.t').value=x.text;q('.pa').value=x.pause;q('.ac').value=x.act||'';
+   q('.ac').classList.toggle('hide',P.voice.acting==='basic'||(x.role==='narrator'&&!P.voice.narr_acted));q('.ac').oninput=()=>{x.act=q('.ac').value;later()};
+   opt(q('.r'),ROLE_OPT,x.role);if(x.role==='narrator')x.mood='normal';if(x.role==='narrator')opt(q('.mo'),[['normal','Narrator voice']],x.mood);else moodOpt(q('.mo'),x.mood);q('.mo').disabled=x.role==='narrator';q('.mo').title=x.role==='narrator'?'The narrator keeps the same voice on every line':'How it is said';opt(q('.sx'),META.sfx.map(s=>[s.id,s.name]),x.sfx);opt(q('.im'),pics,x.img||'');
+   q('.w').oninput=()=>{x.who=q('.w').value;later()};q('.t').oninput=()=>{x.text=q('.t').value;later();est()};
+   q('.r').onchange=()=>{x.role=q('.r').value;x.guess=false;if(x.role==='narrator'){x.who='Narrator';x.mood='normal'}lines();later()};
+   q('.mo').onchange=()=>{x.mood=q('.mo').value;later()};q('.sx').onchange=()=>{x.sfx=q('.sx').value;later();est()};
+   q('.pa').oninput=()=>{x.pause=+q('.pa').value||0;later();est()};q('.im').onchange=()=>{x.img=q('.im').value;later()};
+   q('.pl').onclick=()=>testVoice({role:x.role,mood:x.mood,text:x.text,who:x.who,act:x.act||''});
+   q('.ad').onclick=()=>{P.lines.splice(i+1,0,{id:Math.random().toString(16).slice(2,10),who:'Narrator',role:'narrator',text:'…',mood:'normal',pause:0.6,sfx:'none',img:''});lines();later()};
+   q('.dl').onclick=()=>{P.lines.splice(i,1);lines();later()};box.append(r)});est()}
+ el('hrAdd').onclick=()=>{P.lines.push({id:Math.random().toString(16).slice(2,10),who:'Narrator',role:'narrator',text:'…',mood:'normal',pause:0.6,sfx:'none',img:''});lines();later();el('hrLines').lastElementChild?.scrollIntoView({block:'nearest'})};
+
+ async function testVoice(o){const a=el('hrAud');a.classList.remove('hide');msg(P.voice.acting!=='basic'&&o.role!=='narrator'?'Making the acted voice… (a few seconds)':'Making the voice…');
+  try{const r=await fetch('/horror/voice-test',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...o,pid:P.id,lang:P.lang,voice:P.voice})});
+   if(!r.ok){let j={};try{j=await r.json()}catch(e){}throw new Error(j.error||'Voice failed — check the internet')}
+   const how=r.headers.get('X-Voice')||'';a.src=URL.createObjectURL(await r.blob());a.play().catch(()=>{});msg('▶ Playing'+(how?' · '+how:''),how.startsWith('basic -'))}catch(e){msg(e.message,true)}}
+ el('hrTestN').onclick=()=>testVoice({role:'narrator',mood:'normal'});el('hrTestF').onclick=()=>testVoice({role:'female',mood:'scared',who:'Girl',act:'terrified, alone in a dark house, voice shaking',text:P.lang!=='my'&&P.lang!=='en'&&window.OL&&OL.sample(P.lang)?OL.sample(P.lang):P.lang==='en'?'W-who is there? Please… please answer me.':'ဘ… ဘယ်သူလဲ… ဖြေပါဦး… အမေ…'});
+ el('hrTestM').onclick=()=>testVoice({role:'male',mood:'whisper',who:'Boy',act:'urgent whisper, hiding, afraid to be heard',text:P.lang!=='my'&&P.lang!=='en'&&window.OL&&OL.sample(P.lang)?OL.sample(P.lang):P.lang==='en'?'Shh… stay here. Do not open that door.':'ရှူး… ဒီမှာပဲ နေ။ အဲ့ဒီ တံခါးကို မဖွင့်နဲ့။'});
+
+ /* ---------- pictures ---------- */
+ function pics(){const g=el('hrImgs');g.replaceChildren();el('hrImgN').textContent=P.images.length?`(${P.images.length})`:'';
+  if(!P.images.length){g.innerHTML='<p class="muted">No pictures yet. Without pictures the video shows dark moving fog.</p>'}
+  P.images.forEach((m,i)=>{const c=document.createElement('div');c.className='hrimg';
+   c.innerHTML=`<img loading="lazy" src="/horror/p/${P.id}/img/${m.id}" alt=""><span class="k">${i+1}</span><div class="bar2"><button class="ghost" data-a="l" title="Earlier">←</button><button class="ghost" data-a="r" title="Later">→</button><span>${esc(m.name)}</span><button class="ghost" data-a="x" title="Remove">✕</button></div>`;
+   c.querySelector('[data-a=l]').onclick=()=>move(i,-1);c.querySelector('[data-a=r]').onclick=()=>move(i,1);
+   c.querySelector('[data-a=x]').onclick=async()=>{try{await flush();P=await api(`/horror/p/${P.id}/images/${m.id}`,undefined,'DELETE');pics();lines()}catch(e){msg(e.message,true)}};g.append(c)});est()}
+ async function move(i,d){const j=i+d;if(j<0||j>=P.images.length)return;const a=P.images.slice();[a[i],a[j]]=[a[j],a[i]];P.images=a;pics();lines();
+  await flush();try{P=await api('/horror/p/'+P.id,{order:a.map(m=>m.id)})}catch(e){msg(e.message,true)}}
+ el('hrUp').onchange=async()=>{const fs=[...el('hrUp').files];el('hrUp').value='';if(!fs.length)return;el('hrUpMsg').textContent='Uploading '+fs.length+' pictures…';
+  try{await flush();const j=await upload(`/horror/p/${P.id}/images`,fs);P=j.project;pics();lines();el('hrUpMsg').textContent=j.errors.length?j.errors.join(' · '):'✓ Added'}catch(e){el('hrUpMsg').textContent=e.message}};
+ el('hrMusicF').onchange=async()=>{const f=el('hrMusicF').files[0];el('hrMusicF').value='';if(!f)return;el('hrMusicN').textContent='Uploading…';
+  try{await flush();P=await upload(`/horror/p/${P.id}/music`,[f]);el('hrMusicN').textContent='Your file: '+(P.music.file_name||f.name);moods()}catch(e){el('hrMusicN').textContent=e.message}};
+
+ /* ---------- save ---------- */
+ function body(){const {rev,title,lang,idea,setting,minutes,raw,lines,voice,music,video}=P;return {rev,title,lang,idea,setting,minutes,raw,lines,voice,music,video}}
+ function later(){clearTimeout(saveT);saveT=setTimeout(flush,700)}
+ async function flush(){clearTimeout(saveT);saveT=null;if(!P)return;if(saving)await saving;
+  saving=api('/horror/p/'+P.id,body()).then(j=>{P.estimate=j.estimate;const o=el('hrProjects').querySelector(`option[value="${P.id}"]`);if(o)o.textContent=(j.done?'🎬 ':'')+(j.title||'Untitled story')+' · '+j.lines.length+' lines'}).catch(e=>msg(e.message,true)).finally(()=>{saving=null});await saving}
+
+ /* ---------- steps ---------- */
+ function go(s){step=s;el('hrSteps').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.s===s));
+  for(const x of ['story','lines','music','pics','make'])el('hr_'+x).classList.toggle('hide',x!==s);if(s==='lines')lines();if(s==='make')est()}
+ el('hrSteps').onclick=e=>{const b=e.target.closest('button');if(b)go(b.dataset.s)};
+
+ /* ---------- script jobs ---------- */
+ async function script(m){if(!P)return;if(m==='mine'&&!el('hrRaw').value.trim()){msg('Paste your story script first',true);return}
+  if(m==='mine'&&P.lines.length&&!await uiConfirm('Replace the current lines with this script?'))return;
+  if(m==='gemini'&&P.lines.length&&!await uiConfirm('Gemini will write a NEW story and replace the current lines. Continue?'))return;
+  P.raw=el('hrRaw').value;P.minutes=minSel;try{await flush();await api(`/horror/p/${P.id}/script`,{mode:m});el('hrWLog').classList.remove('hide');el('hrWLog').textContent='Starting…';watch()}catch(e){msg(e.message,true)}}
+ el('hrRead').onclick=()=>script('mine');el('hrWrite').onclick=()=>script('gemini');
+
+ function watch(){clearInterval(poll);const id=P.id;
+  const tick=async()=>{if(!P||P.id!==id){clearInterval(poll);return}let s;try{s=await api(`/horror/p/${id}/status`)}catch(e){return}
+   const logBox=s.kind==='render'?el('hrRLog'):el('hrWLog');logBox.classList.remove('hide');logBox.textContent=(s.log||[]).join('\n');logBox.scrollTop=1e9;
+   if(s.kind==='render'){el('hrBar').style.width=(s.progress||0)+'%';el('hrGo').disabled=!!s.busy;el('hrStop').classList.toggle('hide',!s.busy)}
+   if(s.busy){msg((s.kind==='render'?'Making the video… ':'Working on the script… ')+(s.progress||0)+'%');return}
+   clearInterval(poll);
+   if(s.failed){msg(s.failed,true);return}
+   if(s.done){P=await api('/horror/p/'+id);await loadProjects();
+    if(s.kind==='render'){doneUi(true);msg('✓ Video ready — press Save video')}else{fill();go('lines');msg(`✓ ${P.lines.length} lines · about ${fmtS(P.estimate)} — check the voices, then choose music and pictures`)}}};
+  poll=setInterval(tick,1500);tick()}
+
+ /* ---------- render ---------- */
+ el('hrGo').onclick=async()=>{if(!P)return;if(!P.lines.length){msg('Write or paste the story first (Story step)',true);go('story');return}
+  try{await flush();el('hrDone').classList.add('hide');el('hrVid').pause();await api(`/horror/p/${P.id}/render`,{});el('hrRLog').textContent='Starting…';watch()}catch(e){msg(e.message,true)}};
+ el('hrStop').onclick=()=>P&&api(`/horror/p/${P.id}/cancel`,{}).catch(()=>{});
+ function doneUi(fresh){const ok=P&&P.done;el('hrDone').classList.toggle('hide',!ok);if(ok){const u=`/horror/p/${P.id}/video?t=${fresh?Date.now():Math.round(P.updated)}`;el('hrVid').src=u;el('hrDlA').href=`/horror/p/${P.id}/video?dl=1`;el('hrSaved').textContent=''}}
+ el('hrSave').onclick=async()=>{if(!P)return;if(window.pywebview?.api?.save_horror){const r=await pywebview.api.save_horror(P.id);el('hrSaved').textContent=r?'Saved: '+r:''}else el('hrDlA').click()};
+ el('hrDlA').addEventListener('click',e=>{if(window.pywebview?.api?.save_horror){e.preventDefault();el('hrSave').click()}});
+})();
